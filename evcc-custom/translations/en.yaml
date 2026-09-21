@@ -1,0 +1,26 @@
+configuration:
+  config_file:
+    name: "Location of evcc.yaml (config_file)"
+    description: >
+      (OPTIONAL) The location of evcc.yaml, either /homeassistant/*, /config/* or /data/*.
+      /homeassistant/* maps to /config/*, /config/* maps to /addon_configs/<slug>_evcc_custom/*
+      and /data/* maps to /mnt/data/supervisor/addons/data/<slug>_evcc_custom/* in Home Assistant OS.
+  sqlite_file:
+    name: "Location of evcc.db (sqlite_file)"
+    description: >
+      The location of evcc.db, either /homeassistant/*, /config/* or /data/*.
+      Keep this separate from the official evcc addon's database so the two do not share state.
+  OPTIMIZER_URI:
+    name: "Optimizer API Endpoint (OPTIMIZER_URI)"
+    description: >
+      (OPTIONAL) The endpoint URL for the Optimizer API integration, e.g. https://evopt.evcc.io
+      or http://localhost:7050. Leave empty if not using EVopt features.
+  SEMP_BASE_URL:
+    name: "SHM discovery URL (SEMP_BASE_URL)"
+    description: >
+      (OPTIONAL) The URL through which the SMA Home Manager can reach evcc,
+      e.g. http://your_evcc_ip_address:7070. Leave empty if not using it as a meter.
+  EVCC_REMOTE_ACCESS:
+    name: "Remote access (EVCC_REMOTE_ACCESS)"
+    description: >
+      (OPTIONAL) Token for evcc remote access. Leave empty if unused.
