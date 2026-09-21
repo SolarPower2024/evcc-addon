@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.315.0-lm4
+
+- The peak shaving target entity now has its own "Lastspitzenmanagement" section
+  in the configuration; no yaml needed when running as this add-on.
+- Fix: the card could report "unrestricted" while shaving at full power, when
+  the setpoint happened to equal the free-discharge value.
+- Fix: grid charging was blocked for as long as the reserve was armed, so the
+  reserve could only be refilled from pv and stayed empty overnight. It is now
+  blocked only when charging would actually exceed the peak limit.
+- Fix: a missing target entity left the "reserve armed" state behind.
+
 ## 0.315.0-lm3
 
 - Peak shaving: the battery's lower soc range can be reserved for grid demand

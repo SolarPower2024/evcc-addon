@@ -103,21 +103,27 @@ switch, the peak limit (2–20 kW in 0.5 kW steps) and the reserve soc.
 | below the reserve | peaks only | `max(0, demand − limit)` in W |
 
 evcc only computes the setpoint. The Home Assistant automation reading the
-entity does the actual discharging. Add the output to `evcc.yaml`:
+entity does the actual discharging.
+
+The target entity is set under **Konfiguration → Lastspitzenmanagement** — just
+the entity id, for example `input_number.battery_peak_power`. Running as this
+add-on, evcc reaches Home Assistant through the supervisor, so no url and no
+token are needed. The entity needs **min 0, max at least 10000 and step 1**,
+otherwise Home Assistant rejects the values.
+
+Everything is written in watts; only the limit is shown in kW.
+
+Outside the add-on there is no supervisor, so the endpoint has to be given once
+in `evcc.yaml`:
 
 ```yaml
 site:
   loadmanagement:
     peakshaving:
-      set:
-        source: homeassistant
-        uri: http://homeassistant.local:8123
-        entity: input_number.battery_peak_power
+      uri: http://homeassistant.local:8123
       freevalue: 10000 # optional, the "discharge freely" signal
       hysteresis: 2 # optional, soc band around the reserve in %
 ```
-
-Everything is written in watts; only the limit is shown in kW.
 
 ### Why the demand is not simply the grid meter reading
 
