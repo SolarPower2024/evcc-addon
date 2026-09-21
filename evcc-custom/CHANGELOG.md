@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.315.0-lm3
+
+- Peak shaving: the battery's lower soc range can be reserved for grid demand
+  peaks. Configure the switch, the peak limit (2–20 kW) and the reserve soc
+  under Hausbatterie; the output entity goes into `evcc.yaml`, see the docs.
+- While the reserve is held, the battery stays in normal mode and grid charging
+  is blocked, as charging from the grid would create the peak itself.
+- The Home Assistant plugin can now write `number` and `input_number` entities.
+
 ## 0.315.0-lm2
 
 - The load shedding priority is now a field in the loadpoint configuration ui,

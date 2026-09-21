@@ -89,6 +89,66 @@ POST /api/batterysocgridchargestart/{soc}
 POST /api/batterysocgridchargestop/{soc}
 ```
 
+## 4. Peak shaving
+
+Caps the grid demand peak a demand charge (Leistungspreis) is billed on, by
+holding the battery's lower soc range back as a reserve.
+
+Configure it in the evcc ui under **Hausbatterie → Lastspitzenkappung**: a
+switch, the peak limit (2–20 kW in 0.5 kW steps) and the reserve soc.
+
+| Battery soc | Behaviour | Value written to the entity |
+| --- | --- | --- |
+| above the reserve | ordinary self-consumption | `10000` (discharge freely) |
+| below the reserve | peaks only | `max(0, demand − limit)` in W |
+
+evcc only computes the setpoint. The Home Assistant automation reading the
+entity does the actual discharging. Add the output to `evcc.yaml`:
+
+```yaml
+site:
+  loadmanagement:
+    peakshaving:
+      set:
+        source: homeassistant
+        uri: http://homeassistant.local:8123
+        entity: input_number.battery_peak_power
+      freevalue: 10000 # optional, the "discharge freely" signal
+      hysteresis: 2 # optional, soc band around the reserve in %
+```
+
+Everything is written in watts; only the limit is shown in kW.
+
+### Why the demand is not simply the grid meter reading
+
+Once the battery starts shaving, the grid meter no longer shows the load — it
+shows the result of the controller's own work. Deriving the setpoint from it
+would oscillate: shave, see a compliant grid value, stop, see the peak return.
+evcc therefore adds the battery power back to recover the underlying demand,
+which is independent of what the battery is doing. `TestPeakSetpointIsStable`
+in the fork pins this down.
+
+### Interaction with the other features
+
+While the reserve is being held, evcc forces the battery into **normal** mode
+and **blocks grid charging** — charging from the grid would create the very peak
+the reserve exists to cap.
+
+Peak shaving alone is the expensive lever. Reducing a wallbox from 11 to 4 kW
+costs charging time; emptying the battery costs a cycle and leaves nothing for
+the next peak. Give the grid connection a circuit with `maxpower` at the same
+value as the peak limit, so load management takes the first bite and the battery
+only covers what cannot be throttled.
+
+### What this does not do
+
+The setpoint is derived from instantaneous power, not from the energy already
+consumed in the running 15 minute window. That is safe — the instantaneous value
+never exceeds the limit, so neither does the average — but it spends battery on
+short spikes that barely move the 15 minute average. The card shows that average
+so the effect can be judged before deciding whether window-aware rationing is
+worth the added complexity.
+
 ## Requirements
 
 The battery needs `modeNormal` and `modeCharge` scripts configured on the Home
