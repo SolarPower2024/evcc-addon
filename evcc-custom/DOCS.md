@@ -5,10 +5,18 @@ configured, so this behaves like the official addon until you switch something o
 
 ## 1. Load management priorities
 
-`lmpriority` per loadpoint decides who gives way when a circuit runs out of
+The shed priority per loadpoint decides who gives way when a circuit runs out of
 budget. **Lower is shed first.** It is separate from `priority`, which
 distributes pv surplus, because the load that should get sun first is usually
 not the one that should keep power when the fuse is the constraint.
+
+Set it in the evcc ui under **Konfiguration → Ladepunkte**, field
+*Lastabwurf-Priorität*. It only appears once the loadpoint has a circuit
+assigned, because without one it does not take part in load management at all.
+Changes take effect after restarting the addon.
+
+If you configure loadpoints in `evcc.yaml` instead, the same thing is the
+`lmpriority` key:
 
 ```yaml
 loadpoints:

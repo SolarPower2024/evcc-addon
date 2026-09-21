@@ -1,6 +1,6 @@
 ---
 name: evcc custom
-version: 0.315.0-lm1
+version: 0.315.0-lm2
 slug: evcc_custom
 description: evcc with priority load management, battery participation and soc-based grid charging
 url: https://github.com/SolarPower2024/evcc
