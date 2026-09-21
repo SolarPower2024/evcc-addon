@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.315.0-lm5
+
+- The grid charge power the peak check assumes is now a setting under
+  Lastspitzenmanagement, and the section shows which value is actually in use
+  and where it came from.
+- Fix: an undeterminable charge power blocked grid charging with nothing but a
+  debug line. Note that a battery meter only reports its limits when both
+  maxchargepower and maxdischargepower are set.
+- Load management now also refuses grid charging when the charge power is
+  unknown, instead of waving it through.
+
 ## 0.315.0-lm4
 
 - The peak shaving target entity now has its own "Lastspitzenmanagement" section
