@@ -1,7 +1,11 @@
 # evcc custom
 
-evcc with three additions on top of upstream. All of them are inert until
+evcc with a few additions on top of upstream. All of them are inert until
 configured, so this behaves like the official addon until you switch something on.
+
+Everything is configured in the evcc ui under **Konfiguration →
+Lastmanagement-Details** (Batterie-Stromkreis, Prioritäten, Netzladen, Peak
+Shaving) and on the **Hausbatterie** page (switches, limits, soc values).
 
 ## 1. Load management priorities
 
@@ -10,13 +14,13 @@ budget. **Lower is shed first.** It is separate from `priority`, which
 distributes pv surplus, because the load that should get sun first is usually
 not the one that should keep power when the fuse is the constraint.
 
-Set it in the evcc ui under **Konfiguration → Ladepunkte**, field
-*Lastabwurf-Priorität*. It only appears once the loadpoint has a circuit
-assigned, because without one it does not take part in load management at all.
-Changes take effect after restarting the addon.
+Set it under **Lastmanagement-Details → Prioritäten**, 0 to 10 for every
+loadpoint on a circuit and for the home battery once it is assigned to one.
+Changes apply immediately. Loads without a circuit do not take part and are not
+listed.
 
-If you configure loadpoints in `evcc.yaml` instead, the same thing is the
-`lmpriority` key:
+The `lmpriority` key of a loadpoint in `evcc.yaml` is only the fallback for a
+load that has no value set in the ui:
 
 ```yaml
 loadpoints:
@@ -47,8 +51,22 @@ cycle, so a full shed or recovery takes up to `interval x loadpoints`.
 
 ## 2. Battery in load management
 
-The home battery's grid charging power counts against a circuit and is switched
-off when the budget runs out.
+The home battery's grid charging power counts against a circuit. Assign the
+circuit under **Lastmanagement-Details → Batterie-Stromkreis**; the circuit
+needs a power limit in kW (`maxPower`), a current limit alone is not checked.
+
+Under **Netzladen** you choose how the battery charges from the grid:
+
+- **On/off** (no charge power entity): charging only starts when the full
+  expected charge power fits into the circuit.
+- **Dynamic** (with a charge power entity, e.g. `input_number.battery_charge_power`):
+  evcc writes the permitted charge power in W every cycle, the smallest of the
+  expected charge power, the room below the peak limit (when peak shaving is on)
+  and the room in the circuit. Below 500 W it does not charge and writes 0. Your
+  Home Assistant automation sets the battery's charge power from it. The entity
+  needs min 0, max at least the expected charge power and step 1.
+
+Outside the ui the same settings exist in `evcc.yaml`:
 
 ```yaml
 site:
@@ -94,18 +112,19 @@ POST /api/batterysocgridchargestop/{soc}
 Caps the grid demand peak a demand charge (Leistungspreis) is billed on, by
 holding the battery's lower soc range back as a reserve.
 
-Configure it in the evcc ui under **Hausbatterie → Lastspitzenkappung**: a
-switch, the peak limit (2–20 kW in 0.5 kW steps) and the reserve soc.
+Configure it on the **Hausbatterie** page: a switch, the peak limit (2–20 kW in
+0.5 kW steps) and the reserve soc.
 
 | Battery soc | Behaviour | Value written to the entity |
 | --- | --- | --- |
 | above the reserve | ordinary self-consumption | `10000` (discharge freely) |
 | below the reserve | peaks only | `max(0, demand − limit)` in W |
+| charging from the grid | no discharging | `0` |
 
 evcc only computes the setpoint. The Home Assistant automation reading the
 entity does the actual discharging.
 
-The target entity is set under **Konfiguration → Lastspitzenmanagement** — just
+The target entity is set under **Lastmanagement-Details → Peak Shaving**, just
 the entity id, for example `input_number.battery_peak_power`. Running as this
 add-on, evcc reaches Home Assistant through the supervisor, so no url and no
 token are needed. The entity needs **min 0, max at least 10000 and step 1**,
@@ -136,15 +155,20 @@ in the fork pins this down.
 
 ### Interaction with the other features
 
-While the reserve is being held, evcc forces the battery into **normal** mode
-and **blocks grid charging** — charging from the grid would create the very peak
-the reserve exists to cap.
+While the reserve is being held, evcc keeps the battery in **normal** mode so
+your automation can discharge it. Grid charging (soc or price based) still works
+below the reserve, with two rules:
+
+- A demand peak, meaning consumption **without** the battery above the peak
+  limit, pauses grid charging for 5 minutes and the battery shaves instead.
+- The charge power itself is not counted against the peak limit. In on/off mode
+  charging can therefore push the grid above the limit (e.g. 1 kW house + 6.25 kW
+  charging). Use the dynamic charge power entity to keep charging below it.
 
 Peak shaving alone is the expensive lever. Reducing a wallbox from 11 to 4 kW
 costs charging time; emptying the battery costs a cycle and leaves nothing for
-the next peak. Give the grid connection a circuit with `maxpower` at the same
-value as the peak limit, so load management takes the first bite and the battery
-only covers what cannot be throttled.
+the next peak. Giving the wallbox the lowest priority lets load management take
+the first bite when the circuit limit is reached.
 
 ### What this does not do
 

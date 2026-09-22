@@ -1,5 +1,27 @@
 # Changelog
 
+## 0.315.0-lm6
+
+- The configuration section is now called "Lastmanagement-Details" with four
+  entries: Batterie-Stromkreis, Prioritäten, Netzladen and Peak Shaving.
+- Shed priorities for all loads, the battery included, are set under
+  Prioritäten and apply immediately. The field in the loadpoint dialog is gone;
+  a value set there stays in use until you change it on the new page.
+- New optional charge power entity under Netzladen: evcc writes the permitted
+  grid charge power in W, sized to stay below the peak limit and within the
+  circuit, and 0 when not charging. Without it grid charging stays on/off.
+- Fix: grid charging was blocked while the battery was below the reserve.
+- A demand peak (consumption without the battery above the peak limit) pauses
+  grid charging for 5 minutes so the battery can shave it.
+- The discharge entity gets 0 instead of 10000 while the battery charges from
+  the grid.
+- Fix: a higher-priority load that can only switch on in full (battery, heater)
+  never got its power from a lower-priority wallbox.
+- Fix: charge powers that are not a multiple of 100 W (e.g. 6250) could not be
+  saved; the browser blocked it without a message.
+- Soc grid charging carries on after a restart, a lost hand-back of the free
+  value to Home Assistant is retried, and setpoints are whole watts.
+
 ## 0.315.0-lm5
 
 - The grid charge power the peak check assumes is now a setting under
