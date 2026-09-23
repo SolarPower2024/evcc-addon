@@ -135,6 +135,12 @@ Configure it on the **Hausbatterie** page: a switch, the peak limit (2–20 kW i
 evcc only computes the setpoint. The Home Assistant automation reading the
 entity does the actual discharging.
 
+While peak shaving is on, the setpoint is written in **every cycle**, even when
+it has not changed, so a value changed in Home Assistant (by hand, an
+automation or a restart) is corrected in the next cycle. While it is off, the
+free value is written once and then nothing more. The grid charge power entity
+is written every cycle either way.
+
 The target entity is set under **Lastmanagement-Details → Peak Shaving**, just
 the entity id, for example `input_number.battery_peak_power`. Running as this
 add-on, evcc reaches Home Assistant through the supervisor, so no url and no

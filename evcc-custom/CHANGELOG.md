@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.315.0-lm9
+
+- The peak shaving setpoint and the grid charge power are now written to Home
+  Assistant in every cycle, not only when they change. A value changed in Home
+  Assistant (by hand, an automation or a restart) no longer sticks.
+- While peak shaving is off, the free value (10000 W) is written once and then
+  nothing more.
+
 ## 0.315.0-lm8
 
 - New feed-in tariff "OeMAG Marktpreis (Einspeisung)" under Tarife &
