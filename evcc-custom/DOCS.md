@@ -190,6 +190,30 @@ short spikes that barely move the 15 minute average. The card shows that average
 so the effect can be judged before deciding whether window-aware rationing is
 worth the added complexity.
 
+## 5. OeMAG feed-in tariff
+
+Add it under **Tarife & Vorhersagen → Einspeisevergütung hinzufügen**, provider
+**OeMAG Marktpreis (Einspeisung)**. A restart applies it, like any tariff.
+
+OeMAG publishes a month's market price only in the following month. Until then
+the latest published value is the running feed-in price, for display and for
+all calculations. On the **Stichtag Neuberechnung** (default 15th) that value
+becomes the final price of the previous month, and evcc recalculates once:
+
+- the stored 15 minute feed-in rates of the previous month
+- the price of the previous month's charging sessions: their solar share is
+  valued at the feed-in price, so it is revalued from the provisional to the
+  final price
+
+Each month is recalculated exactly once. If evcc is not running on that day it
+catches up on the next start within the month. Sessions from a time evcc did not
+store feed-in rates for are left unchanged. The log shows a line like
+`feed-in 2026-08 finalized at 0.08997/kWh: … recalculated`.
+
+The price comes from an unofficial scraper
+(github.com/chrsbrmr/oemag-marktpreis). Values that are missing, not in EUR/kWh
+or outside 0 to 1 EUR/kWh are ignored and the last good value is kept.
+
 ## Requirements
 
 The battery needs `modeNormal` and `modeCharge` scripts configured on the Home

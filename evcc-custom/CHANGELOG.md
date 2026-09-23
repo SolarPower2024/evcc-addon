@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.315.0-lm8
+
+- New feed-in tariff "OeMAG Marktpreis (Einspeisung)" under Tarife &
+  Vorhersagen → Einspeisevergütung. The latest published market price is used
+  as the running feed-in price.
+- From the finalize day (default 15th, adjustable 1 to 28) that value becomes
+  the final price of the previous month: the stored feed-in rates of that
+  month and the prices of its charging sessions (solar share) are recalculated
+  once. Each month only once, so a later change at the source does not rewrite
+  it again.
+
 ## 0.315.0-lm7
 
 - Home Assistant switches (heaters etc.) are now switched on or off as a whole
