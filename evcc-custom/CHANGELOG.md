@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.315.0-lm7
+
+- Home Assistant switches (heaters etc.) are now switched on or off as a whole
+  by load management. Before, a 3 kW heater could be switched on with only
+  1.6 kW to spare and the circuit stayed overloaded.
+- New optional field "Leistung" (W) on the Home Assistant switch: the power the
+  device draws when on. Load management checks it before switching on and uses
+  it while there is no measurement. Without a power sensor it is also shown as
+  the device's power.
+- An overload is now shed by priority, lowest first, instead of hitting
+  whichever loadpoint evcc happens to update first.
+- Power that no higher-priority load can use (e.g. 1.6 kW free while every
+  waiting heater needs 3 kW) is no longer held back from lower-priority loads.
+
 ## 0.315.0-lm6
 
 - The configuration section is now called "Lastmanagement-Details" with four

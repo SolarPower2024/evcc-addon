@@ -49,6 +49,17 @@ from lower-priority loads for as long as someone above still reports unmet
 demand. Each rung costs one update cycle, and evcc updates one loadpoint per
 cycle, so a full shed or recovery takes up to `interval x loadpoints`.
 
+**Overload** is shed from the bottom: a load keeps what it draws as long as the
+loads below it draw enough to cover the excess.
+
+**Home Assistant switches** (heaters and the like) can only be on or off, so
+load management switches them on only when their whole power fits and off when
+it no longer does. Enter the power the device draws when on in the switch's
+field **Leistung** (W). evcc checks it before switching on and uses it while
+there is no measurement; without a power sensor it is also shown as the
+device's power. Without the field evcc uses the last measured power, or 3680 W
+(16 A) before the first measurement.
+
 ## 2. Battery in load management
 
 The home battery's grid charging power counts against a circuit. Assign the
