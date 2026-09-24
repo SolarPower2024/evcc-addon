@@ -4,8 +4,10 @@ evcc with a few additions on top of upstream. All of them are inert until
 configured, so this behaves like the official addon until you switch something on.
 
 Everything is configured in the evcc ui under **Konfiguration →
-Lastmanagement-Details** (Batterie-Stromkreis, Prioritäten, Netzladen, Peak
-Shaving) and on the **Hausbatterie** page (switches, limits, soc values).
+Lastmanagement-Details** (Batterie-Stromkreis, Prioritäten, Abwurfschutz,
+Netzladen, Peak Shaving, Profile, Erweitert) and on the **Hausbatterie** page
+(profile, switches, limits, soc values). **Mehr → Lastmanagement** shows what
+load management is doing right now.
 
 ## 1. Load management priorities
 
@@ -216,9 +218,57 @@ catches up on the next start within the month. Sessions from a time evcc did not
 store feed-in rates for are left unchanged. The log shows a line like
 `feed-in 2026-08 finalized at 0.08997/kWh: … recalculated`.
 
+The tariff's card shows the last finalized month and the next recalculation.
+**Monate anzeigen** lists every finalized month with market price, applied
+price and what was recalculated. There a month can be recalculated by hand,
+with the published or a corrected market price, for example if the value on the
+finalize day was wrong. A month recalculated by hand is not recalculated again
+automatically.
+
 The price comes from an unofficial scraper
 (github.com/chrsbrmr/oemag-marktpreis). Values that are missing, not in EUR/kWh
 or outside 0 to 1 EUR/kWh are ignored and the last good value is kept.
+
+## 6. Shed guard (Abwurfschutz)
+
+A protected loadpoint that load management had to switch off stays off for the
+set minutes (0 to 120, 0 = off), even if the power is back earlier. Only
+switching off a running load counts: a switch that loses its budget, or a
+wallbox pushed below its minimum current. A load that could not start for lack
+of power is not held off. Set it under **Lastmanagement-Details →
+Abwurfschutz**, the minutes and a tick per loadpoint.
+
+## 7. Overview (Mehr → Lastmanagement)
+
+Shown once a circuit is configured. Tiles for every circuit (load and limit),
+peak shaving (15 minute average, reserve, setpoint) and battery grid charging;
+below every load on a circuit, highest priority first, with its state, and the
+last 20 events (shed, throttled, peak covered, grid charging paused or
+blocked). The events are kept in memory and start empty after a restart.
+
+## 8. Battery profiles
+
+Set up under **Lastmanagement-Details → Profile**, picked on the **Hausbatterie**
+page. A profile has a name, an icon and any of these values, each with a tick:
+
+- Netzladen: soc grid charging on/off, start soc, stop soc
+- Batterienutzung: surplus to the battery first up to, battery as charging
+  buffer from, start charging from, discharge lock in fast and planned charging
+- Lastspitzenkappung: on/off, reserve soc, peak limit
+- Wallbox: solar share per wallbox (heating devices are not offered)
+
+Values not ticked stay as they are when switching. "Aktuelle Werte übernehmen"
+fills the profile with what is set right now. Switching runs the same checks as
+setting a value by hand; if one value cannot be applied, the others still are
+and the battery page shows which one failed.
+
+## 9. Advanced settings (Erweitert)
+
+Under **Lastmanagement-Details → Erweitert**: reserve hysteresis (default 2 %),
+free value written while the battery may discharge freely (10000 W), grid
+charge hold-off after a peak or the circuit stopped it (5 min), reservation
+expiry for waiting higher priority loads (10 min) and the battery's phases for
+current limits (3).
 
 ## Requirements
 

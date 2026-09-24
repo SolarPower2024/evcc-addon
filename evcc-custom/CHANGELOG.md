@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.315.0-lm10
+
+- New under Mehr → **Lastmanagement**: an overview of what load management is
+  doing right now. Circuit load, peak shaving (15 minute average, setpoint),
+  battery grid charging, every load with its state (running, throttled, shed
+  and held off until, waiting with what it needs and what is free, paused) and
+  the recent events.
+- New **Abwurfschutz** under Lastmanagement-Details: a protected loadpoint
+  that load management had to switch off stays off for the set minutes, so a
+  heater does not flap with a fluctuating load.
+- New **Profile** under Lastmanagement-Details, picked on the battery page:
+  named sets of settings (e.g. summer and winter) for soc grid charging,
+  battery usage, the discharge lock, peak shaving (incl. limit) and the
+  wallboxes' solar share. Values not ticked stay as they are.
+- New **Erweitert** under Lastmanagement-Details: reserve hysteresis, free
+  value, grid charge hold-off, reservation expiry and battery phases, which
+  were yaml only before.
+- OeMAG: the feed-in tariff card shows the last finalized month and the next
+  recalculation. "Monate anzeigen" lists every finalized month and can
+  recalculate one by hand with a corrected price.
+
 ## 0.315.0-lm9
 
 - The peak shaving setpoint and the grid charge power are now written to Home
