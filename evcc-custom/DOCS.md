@@ -325,6 +325,6 @@ and `config_file` pointing at separate paths so they do not share state.
 
 ## Source
 
-Built from https://github.com/SolarPower2024/evcc, branch `loadmanagement`.
+Built from https://github.com/SolarPower2024/evcc, branch `load-peak-features`.
 See `core/lm/README.md` there for the implementation details and the list of
 upstream files that were touched.
