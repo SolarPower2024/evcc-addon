@@ -7,7 +7,8 @@ Everything is configured in the evcc ui under **Konfiguration →
 Lastmanagement-Details** (Batterie-Stromkreis, Prioritäten, Abwurfschutz,
 Netzladen, Peak Shaving, Profile, Erweitert) and on the **Hausbatterie** page
 (profile, switches, limits, soc values). **Mehr → Lastmanagement** shows what
-load management is doing right now.
+load management is doing right now, **Mehr → Peak Shaving** the highest quarter
+hour of each month.
 
 ## 1. Load management priorities
 
@@ -131,7 +132,7 @@ Configure it on the **Hausbatterie** page: a switch, the peak limit (2–20 kW i
 | Battery soc | Behaviour | Value written to the entity |
 | --- | --- | --- |
 | above the reserve | ordinary self-consumption | `10000` (discharge freely) |
-| below the reserve | peaks only | `max(0, demand − limit)` in W |
+| below the reserve | peaks only | `max(0, demand − allowed)` in W, see below |
 | charging from the grid | no discharging | `0` |
 
 evcc only computes the setpoint. The Home Assistant automation reading the
@@ -150,6 +151,38 @@ token are needed. The entity needs **min 0, max at least 10000 and step 1**,
 otherwise Home Assistant rejects the values.
 
 Everything is written in watts; only the limit is shown in kW.
+
+### The 15 minute window
+
+A demand charge is billed on the average of each quarter hour (:00, :15, :30,
+:45), so the limit applies to that average, not to the momentary grid power.
+`allowed` is the grid power that keeps the running quarter hour's average at
+the limit: `(limit × 15 min − energy drawn so far) / time left`. Drawing less
+early on allows more later, so a short spike is only covered when the quarter
+hour as a whole would end above the limit. Example: 5 kW limit, nothing drawn
+for 5 minutes, then 7.5 kW are allowed for the remaining 10.
+
+- `allowed` is at most **2 × the limit** (Erweitert → cap).
+- From **minute 12** on it no longer grows, only falls (Erweitert → freeze
+  minute). A meter clock off by a few seconds could otherwise move a large late
+  draw into the next quarter hour.
+- Once a quarter hour's budget is spent, `allowed` is 0 and the setpoint is
+  the whole demand. This only happens when the battery could not deliver
+  earlier.
+- The part of a quarter hour evcc did not see (after a start) counts at the
+  limit.
+
+The energy drawn comes from, in this order:
+
+1. the grid meter's import counter in evcc, when it has one
+2. a Home Assistant energy sensor, **Energiezähler Netzbezug** under
+   Lastmanagement-Details → Peak Shaving: a total counter in kWh or Wh, not a
+   daily value
+3. the grid power, which evcc only sees every 10 to 30 seconds
+
+The dialog shows which one is in use. A counter that fails or stops updating is
+replaced by the grid power until the quarter hour ends, with a warning in the
+log. Grid charging still pauses on the momentary demand above the limit.
 
 Outside the add-on there is no supervisor, so the endpoint has to be given once
 in `evcc.yaml`:
@@ -188,15 +221,6 @@ Peak shaving alone is the expensive lever. Reducing a wallbox from 11 to 4 kW
 costs charging time; emptying the battery costs a cycle and leaves nothing for
 the next peak. Giving the wallbox the lowest priority lets load management take
 the first bite when the circuit limit is reached.
-
-### What this does not do
-
-The setpoint is derived from instantaneous power, not from the energy already
-consumed in the running 15 minute window. That is safe — the instantaneous value
-never exceeds the limit, so neither does the average — but it spends battery on
-short spikes that barely move the 15 minute average. The card shows that average
-so the effect can be judged before deciding whether window-aware rationing is
-worth the added complexity.
 
 ## 5. OeMAG feed-in tariff
 
@@ -246,6 +270,12 @@ below every load on a circuit, highest priority first, with its state, and the
 last 20 events (shed, throttled, peak covered, grid charging paused or
 blocked). The events are kept in memory and start empty after a restart.
 
+**Mehr → Peak Shaving** shows, per month, the highest quarter hour with the
+battery (the actual grid draw) and without it (grid draw plus battery power,
+charging counts negative), each with its time, and how often the battery
+started covering a peak. Only quarter hours evcc saw from their start count. The
+last 24 months are kept.
+
 ## 8. Battery profiles
 
 Set up under **Lastmanagement-Details → Profile**, picked on the **Hausbatterie**
@@ -267,8 +297,9 @@ and the battery page shows which one failed.
 Under **Lastmanagement-Details → Erweitert**: reserve hysteresis (default 2 %),
 free value written while the battery may discharge freely (10000 W), grid
 charge hold-off after a peak or the circuit stopped it (5 min), reservation
-expiry for waiting higher priority loads (10 min) and the battery's phases for
-current limits (3).
+expiry for waiting higher priority loads (10 min), the battery's phases for
+current limits (3), and for peak shaving the minute from which the allowed grid
+draw stops growing (12) and its cap (2 × limit).
 
 ## Requirements
 

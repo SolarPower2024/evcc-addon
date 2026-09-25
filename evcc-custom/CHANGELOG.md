@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.315.0-lm11
+
+- Peak shaving now limits the **15 minute average** instead of the momentary
+  grid power. Energy not drawn earlier in a quarter hour allows more later, so
+  short spikes no longer use the battery reserve. The battery page shows the
+  grid draw allowed until the end of the quarter hour.
+- The quarter hour is metered with an energy counter: the grid meter's import
+  counter, else a Home Assistant energy sensor (new field under
+  Lastmanagement-Details → Peak Shaving), else the grid power as before.
+- New under Erweitert: from which minute the allowed grid draw stops growing
+  (default 12) and its cap (default 2 × peak limit).
+- New under Mehr → **Peak Shaving**: the highest quarter hour of each month
+  with and without the battery, and how often the battery stepped in.
+- The profile selection moved to the bottom of the battery page.
+- Shorter help texts in the load management settings.
+
 ## 0.315.0-lm10
 
 - New under Mehr → **Lastmanagement**: an overview of what load management is
