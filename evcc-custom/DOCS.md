@@ -55,6 +55,15 @@ cycle, so a full shed or recovery takes up to `interval x loadpoints`.
 **Overload** is shed from the bottom: a load keeps what it draws as long as the
 loads below it draw enough to cover the excess.
 
+That only works if they give way. A load that keeps drawing more than it was
+allowed while its circuit is overloaded (tolerance 300 W or 10 %) is no longer
+counted on after the set cycles, **Erweitert → Vorgabe ignoriert nach** (default
+3, 0 = off). The next load up the priority order is then cut instead. Example: the
+battery is told to grid-charge at 3 kW but keeps drawing 6.25 kW, so the heater
+above it is switched off. As soon as the load follows its limit again it counts
+again. The log shows a warning and the overview the event "folgt der Vorgabe
+nicht".
+
 **Home Assistant switches** (heaters and the like) can only be on or off, so
 load management switches them on only when their whole power fits and off when
 it no longer does. Enter the power the device draws when on in the switch's
@@ -298,8 +307,9 @@ Under **Lastmanagement-Details → Erweitert**: reserve hysteresis (default 2 %)
 free value written while the battery may discharge freely (10000 W), grid
 charge hold-off after a peak or the circuit stopped it (5 min), reservation
 expiry for waiting higher priority loads (10 min), the battery's phases for
-current limits (3), and for peak shaving the minute from which the allowed grid
-draw stops growing (12) and its cap (2 × limit).
+current limits (3), for peak shaving the minute from which the allowed grid
+draw stops growing (12) and its cap (2 × limit), and the cycles after which a
+load ignoring its limit is no longer counted on (3, 0 = off).
 
 ## Requirements
 

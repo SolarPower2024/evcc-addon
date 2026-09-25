@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.315.0-lm12
+
+- Load management no longer counts on a load that ignores its limit. When a
+  circuit stays overloaded and a reduced load keeps drawing more than allowed
+  (e.g. a battery told to grid-charge at 3 kW that keeps drawing 6.25 kW), the
+  next load up the priority order is cut after the set cycles (Erweitert →
+  "Vorgabe ignoriert nach", default 3, 0 = off). The overview shows an event,
+  the log a warning.
+- Lastmanagement-Details are shown as tiles, like the services.
+
 ## 0.315.0-lm11
 
 - Peak shaving now limits the **15 minute average** instead of the momentary
