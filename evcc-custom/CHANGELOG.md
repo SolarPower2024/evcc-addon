@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.316.0-lm1
+
+- Based on evcc 0.316.0.
+- Below the peak reserve a battery mode set from outside through the evcc api
+  (e.g. by a Home Assistant automation) is no longer overridden.
+- Maintenance: the load management check of a loadpoint now runs inside
+  evcc's own calculation instead of a copy of it, so later evcc updates merge
+  more easily. No change in behaviour.
+- Peak shaving targets can no longer be written through a yaml
+  `source: homeassistant` setter; set them in the ui as before.
+
 ## 0.315.0-lm12
 
 - Load management no longer counts on a load that ignores its limit. When a
