@@ -1,5 +1,27 @@
 # Changelog
 
+## 0.316.0-lm2
+
+- One priority: a loadpoint's regular evcc priority now also decides load
+  management shedding, so pv surplus, planned charging and load management
+  follow one order. The home battery keeps its own value (0-10). The former
+  load management priorities of the loadpoints are taken over once on the
+  first start (log line per loadpoint) - this also changes the pv surplus
+  order accordingly.
+- Optimizer: peak limit, peak reserve, soc-based grid charging (start soc
+  planned ahead, stop soc as goal within "Netzlade-Ziel erreichen in",
+  default 3 h), one-time grid charging, circuit limits and priorities are
+  given to the optimizer as inputs, so its plan, the battery forecast and its
+  suggestions match what evcc does. Works with a local optimizer (addon
+  "evcc optimizer").
+- Charge once: battery page, "Einmalig bis … aus dem Netz laden", right away
+  or by a time at the cheapest time, with cancel, continues across restarts.
+- Second feed-in tariff (EEG): add "Einspeisevergütung EEG" below the
+  feed-in tariff (fixed price, 0 allowed) and set the Home Assistant counter
+  of the EEG export. The export is recorded split into EEG and standard
+  feed-in (GET /api/feedinsplit); the display on the new energy page follows
+  with a later evcc version.
+
 ## 0.316.0-lm1
 
 - Based on evcc 0.316.0.

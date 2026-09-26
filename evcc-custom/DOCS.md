@@ -12,37 +12,21 @@ hour of each month.
 
 ## 1. Load management priorities
 
-The shed priority per loadpoint decides who gives way when a circuit runs out of
-budget. **Lower is shed first.** It is separate from `priority`, which
-distributes pv surplus, because the load that should get sun first is usually
-not the one that should keep power when the fuse is the constraint.
+One priority decides who gives way when a circuit runs out of budget:
+**lower is shed first.** For a loadpoint it is its regular evcc priority, the
+same one that distributes pv surplus, so pv surplus, planned charging and load
+management follow one order. The home battery has no evcc priority and keeps a
+value of its own on the same 0-10 scale.
 
 Set it under **Lastmanagement-Details → Prioritäten**, 0 to 10 for every
-loadpoint on a circuit and for the home battery once it is assigned to one.
-Changes apply immediately. Loads without a circuit do not take part and are not
-listed.
+loadpoint on a circuit and for the home battery once it is assigned to one. A
+loadpoint's value is also shown and editable in its own settings. Changes
+apply immediately. Loads without a circuit do not take part and are not listed.
 
-The `lmpriority` key of a loadpoint in `evcc.yaml` is only the fallback for a
-load that has no value set in the ui:
-
-```yaml
-loadpoints:
-  - title: Wallbox
-    charger: wallbox
-    circuit: main
-    priority: 5      # pv surplus goes here first
-    lmpriority: 1    # ... but this is reduced first
-
-  - title: Heizstab
-    charger: ha-switch-heater
-    circuit: main
-    lmpriority: 2
-
-  - title: Wärmepumpe
-    charger: ha-switch-heatpump
-    circuit: main
-    lmpriority: 5    # keeps its power the longest
-```
+Earlier versions had a separate load management priority per loadpoint
+(`lmpriority`). On the first start of this version those values are taken over
+into the loadpoints' priority once (a log line names each one); the pv surplus
+order follows them from then on.
 
 Loads only take part when they sit on a `circuit`. Without differing
 priorities nothing changes versus upstream.
@@ -128,6 +112,20 @@ Also available via the api:
 POST /api/batterysocgridcharge/{true|false}
 POST /api/batterysocgridchargestart/{soc}
 POST /api/batterysocgridchargestop/{soc}
+```
+
+### Charge once
+
+Below it on the battery page: **Einmalig bis … aus dem Netz laden**, right
+away or **bis Uhrzeit** at the cheapest time before it (from the planner
+tariff; right away when the time has passed or the duration is unknown). It
+switches itself off at the target soc, continues across restarts and has a
+cancel button. The same checks as soc-based grid charging apply (peak,
+circuit, charge power).
+
+```
+POST   /api/batterygridchargeonce/{soc}[/{HH:MM}]
+DELETE /api/batterygridchargeonce
 ```
 
 ## 4. Peak shaving
@@ -262,6 +260,18 @@ The price comes from an unofficial scraper
 (github.com/chrsbrmr/oemag-marktpreis). Values that are missing, not in EUR/kWh
 or outside 0 to 1 EUR/kWh are ignored and the last good value is kept.
 
+### Second feed-in tariff (EEG)
+
+If part of the export goes to an energy community (EEG), add **Einspeisevergütung
+EEG hinzufügen** below the feed-in tariff: a fixed price, 0 is allowed. In its
+card, **Zähler festlegen** sets the Home Assistant energy counter of the EEG
+export (kWh or Wh). evcc then records the EEG export per quarter hour; the
+standard feed-in (OeMAG) is the total export of the grid meter minus EEG. Only
+counters are used, the grid power that drives pv control, load management and
+peak shaving is not touched, and self-consumption keeps being valued at the
+standard tariff. The split is available via `GET /api/feedinsplit`; its display
+on the new energy page follows with a later evcc version.
+
 ## 6. Shed guard (Abwurfschutz)
 
 A protected loadpoint that load management had to switch off stays off for the
@@ -309,7 +319,21 @@ charge hold-off after a peak or the circuit stopped it (5 min), reservation
 expiry for waiting higher priority loads (10 min), the battery's phases for
 current limits (3), for peak shaving the minute from which the allowed grid
 draw stops growing (12) and its cap (2 × limit), and the cycles after which a
-load ignoring its limit is no longer counted on (3, 0 = off).
+load ignoring its limit is no longer counted on (3, 0 = off), and how long the
+optimizer may take to reach the stop soc of running soc-based grid charging
+(3 h).
+
+## 10. Optimizer
+
+The optimizer (Konfiguration → Experimentell and Optimizer, needs a sponsor
+token) gets the settings above as inputs, so its plan, the battery soc forecast
+and its suggestions match what evcc does: the peak limit as grid import limit,
+the peak reserve as minimum soc, the start soc of soc-based grid charging as
+minimum soc (charging is planned ahead) and, while it runs, the stop soc as goal
+within the grid charge window, a one-time grid charge as goal, a loadpoint's
+circuit power as its limit and the priorities. It can run locally: install the
+addon **evcc optimizer** and set **OPTIMIZER_URI** to its address, e.g.
+`http://localhost:7050` on the same host.
 
 ## Requirements
 
