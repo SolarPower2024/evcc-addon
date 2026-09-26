@@ -1,0 +1,28 @@
+name: evcc optimizer
+version: "2026.9.14"
+slug: evcc_optimizer
+description: Local optimizer for the evcc custom addon, instead of the cloud service
+url: https://github.com/SolarPower2024/evcc-addon
+stage: experimental
+
+boot: auto
+startup: application
+init: false
+watchdog: http://[HOST]:[PORT:7050]/optimize/health
+
+# evcc custom runs on the host network too, so it reaches the optimizer at
+# http://localhost:7050 (set as OPTIMIZER_URI in the evcc custom addon)
+host_network: true
+
+arch:
+  - aarch64
+  - amd64
+
+ports:
+  7050/tcp: 7050
+
+ports_description:
+  7050/tcp: "Optimizer API"
+
+# no image: Home Assistant builds the small Dockerfile next to this file, which
+# pins the official optimizer image, see DOCS.md

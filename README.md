@@ -10,7 +10,9 @@ Home Assistant → Settings → Add-ons → Add-on Store → ⋮ → Repositorie
 https://github.com/SolarPower2024/evcc-addon
 ```
 
-Then install **evcc custom** from the store.
+Then install **evcc custom** from the store, and optionally **evcc optimizer** to
+run the optimizer locally instead of the cloud service (see
+[evcc-optimizer/DOCS.md](evcc-optimizer/DOCS.md)).
 
 ## What is different from the official addon
 
