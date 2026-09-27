@@ -5,8 +5,9 @@ configured, so this behaves like the official addon until you switch something o
 
 Everything is configured in the evcc ui under **Konfiguration →
 Lastmanagement-Details** (Batterie-Stromkreis, Prioritäten, Abwurfschutz,
-Netzladen, Peak Shaving, Profile, Erweitert) and on the **Hausbatterie** page
-(profile, switches, limits, soc values). **Mehr → Lastmanagement** shows what
+Batterie-Netzladen, Peak Shaving, Leistungstarif, Profile, Erweitert) and on the
+**Hausbatterie** page (profile, switches, limits, soc values). **Mehr →
+Lastmanagement (Peak)** shows what
 load management is doing right now, **Mehr → Peak Shaving** the highest quarter
 hour of each month.
 
@@ -18,10 +19,11 @@ same one that distributes pv surplus, so pv surplus, planned charging and load
 management follow one order. The home battery has no evcc priority and keeps a
 value of its own on the same 0-10 scale.
 
-Set it under **Lastmanagement-Details → Prioritäten**, 0 to 10 for every
-loadpoint on a circuit and for the home battery once it is assigned to one. A
-loadpoint's value is also shown and editable in its own settings. Changes
-apply immediately. Loads without a circuit do not take part and are not listed.
+Set it under **Lastmanagement-Details → Prioritäten** for every loadpoint on a
+circuit and for the home battery once it is assigned to one: drag the loads into
+order, the most important on top. A drag numbers all of them from the bottom
+(0, 1, 2 …, at most 10). A loadpoint's value is also shown and editable in its
+own settings. Changes apply immediately. Loads without a circuit do not take part and are not listed.
 
 Earlier versions had a separate load management priority per loadpoint
 (`lmpriority`). On the first start of this version those values are taken over
@@ -62,7 +64,7 @@ The home battery's grid charging power counts against a circuit. Assign the
 circuit under **Lastmanagement-Details → Batterie-Stromkreis**; the circuit
 needs a power limit in kW (`maxPower`), a current limit alone is not checked.
 
-Under **Netzladen** you choose how the battery charges from the grid:
+Under **Batterie-Netzladen** you choose how the battery charges from the grid:
 
 - **On/off** (no charge power entity): charging only starts when the full
   expected charge power fits into the circuit.
@@ -238,10 +240,10 @@ your limit, the limit rises to that peak minus the **buffer** (0–5 kW, default
 keeps showing your own limit and adds "Grenze diesen Monat". A new month, or
 switching it off, returns to your own limit.
 
-**Stromkreis-Grenze mitziehen** (optional): the chosen circuit's power limit
-rises along with the raised limit, never below its configured value, and is back
-at it with the next month. Choose it only for a circuit that is your peak limit,
-not for the agreed connection power.
+The **load management (peak) circuit** (see Erweitert), when chosen, rises
+along with the raised limit, never below its configured value, and is back at it
+with the next month. This replaces the former "Stromkreis-Grenze mitziehen"; a
+circuit chosen there is taken over.
 
 ### Capacity tariff (Leistungstarif)
 
@@ -305,19 +307,25 @@ wallbox pushed below its minimum current. A load that could not start for lack
 of power is not held off. Set it under **Lastmanagement-Details →
 Abwurfschutz**, the minutes and a tick per loadpoint.
 
-## 7. Overview (Mehr → Lastmanagement)
+## 7. Overview (Mehr → Lastmanagement (Peak))
 
-Shown once a circuit is configured. Tiles for every circuit (load and limit),
+Shown once a circuit is configured. Tiles for the load management (peak)
+circuit, or every circuit when none is chosen (load and limit),
 peak shaving (15 minute average, reserve, setpoint) and battery grid charging;
 below every load on a circuit, highest priority first, with its state, and the
 last 20 events (shed, throttled, peak covered, grid charging paused or
 blocked). The events are kept in memory and start empty after a restart.
 
 The switch **Lastmanagement** at the top turns load management off: the power
-limits of all circuits (e.g. a circuit used as peak limit) no longer throttle
-wallboxes, heaters or grid charging. Fuses (current limits), §14a and battery
+limit of the load management (peak) circuit (without one chosen: of all
+circuits) no longer throttles wallboxes, heaters or grid charging; other
+circuits, e.g. the fuse, keep theirs. Fuses (current limits), §14a and battery
 peak shaving stay active. Your configuration is not changed; switching on
 restores the limits. The setting survives a restart.
+
+An exceeded power limit no longer pops up as a notification (top right), load
+management handles it by shedding; it stays in the log. An exceeded current
+limit (fuse) is still shown.
 
 **Mehr → Peak Shaving** shows, per month, the highest quarter hour with the
 battery (the actual grid draw) and without it (grid draw plus battery power,
@@ -343,15 +351,18 @@ and the battery page shows which one failed.
 
 ## 9. Advanced settings (Erweitert)
 
-Under **Lastmanagement-Details → Erweitert**: reserve hysteresis (default 2 %),
+Under **Lastmanagement-Details → Erweitert**: the **Stromkreis Lastmanagement
+(Peak)**, i.e. the circuit holding your peak limit beside a circuit for the fuse
+(only it is shown in the overview, lifted by the switch and raised by follow the
+peak; none = all circuits), the peak shaving reserve hysteresis (default 2 %),
 free value written while the battery may discharge freely (10000 W), grid
 charge hold-off after a peak or the circuit stopped it (5 min), reservation
 expiry for waiting higher priority loads (10 min), the battery's phases for
-current limits (3), for peak shaving the minute from which the allowed grid
-draw stops growing (12) and its cap (2 × limit), and the cycles after which a
+current limits (3), the minute from which the peak shaving budget stops
+growing (12) and its cap (2 × limit), and the cycles after which a
 load ignoring its limit is no longer counted on (3, 0 = off), and how long the
-optimizer may take to reach the stop soc of running soc-based grid charging
-(3 h).
+optimizer may take to reach the stop soc of running soc-based battery grid
+charging, charging in the cheapest hours of it (3 h, 1 h = right away).
 
 ## 10. Optimizer
 

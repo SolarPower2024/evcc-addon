@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.316.0-lm5
+
+- Load management (peak) circuit (Lastmanagement-Details → Erweitert): the
+  circuit holding your peak limit, beside a circuit for the fuse. Only it is
+  shown under Mehr → Lastmanagement (Peak), only it is lifted by the switch
+  there, and follow the peak raises it. Replaces "Stromkreis-Grenze
+  mitziehen", a circuit chosen there is taken over. None = all circuits as
+  before.
+- An exceeded power limit no longer pops up as a notification, it stays in the
+  log. An exceeded current limit (fuse) is still shown.
+- Priorities (Lastmanagement-Details → Prioritäten) are sorted by drag, the
+  most important on top; a drag numbers all loads from the bottom (0, 1, 2 …).
+- Overview: shed guard lock beside the name, no priority column, loads listed
+  by priority ("unten wird zuerst abgeworfen").
+- Optimizer: solves again right away when its inputs change (peak switch,
+  limit, reserve, soc grid charging, follow the peak, circuit limits), instead
+  of keeping an old plan for up to 15 minutes.
+- Texts: "Batterie-Netzladen" instead of "Netzladen"; Erweitert without the
+  default values, the hysteresis and the budget named as peak shaving's;
+  shorter peak shaving and capacity tariff descriptions.
+
 ## 0.316.0-lm4
 
 - Load management switch (Mehr → Lastmanagement): off lifts the power limits
