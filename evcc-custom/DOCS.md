@@ -334,9 +334,9 @@ charge hold-off after a peak or the circuit stopped it (5 min), reservation
 expiry for waiting higher priority loads (10 min), the battery's phases for
 current limits (3), the minute from which the peak shaving budget stops
 growing (12) and its cap (2 × limit), and the cycles after which a
-load ignoring its limit is no longer counted on (3, 0 = off), and how long the
-optimizer may take to reach the stop soc of running soc-based battery grid
-charging, charging in the cheapest hours of it (3 h, 1 h = right away).
+load ignoring its limit is no longer counted on (3, 0 = off), and the longest the
+optimizer plans soc-based battery grid charging from the start to the stop soc
+(3 h): it plans the charging time at the grid charge power, at most this.
 
 ### Consumption forecast and battery identification
 
@@ -358,9 +358,11 @@ The optimizer (Konfiguration → Experimentell and Optimizer, needs a sponsor
 token) gets the settings above as inputs, so its plan, the battery soc forecast
 and its suggestions match what evcc does: the peak limit as grid import limit,
 the peak reserve as hard minimum soc, the start soc of soc-based grid charging as
-minimum soc and the stop soc as goal within the grid charge window, from now
+minimum soc and the charge to the stop soc after the charging time, from now
 while it runs and else from where the battery is expected to fall to the start
-soc (only while it is switched on; with the reserve above the start soc
+soc: from there the optimizer plans the rest again, starting with that charge,
+so the forecast shows the discharge to the start soc and the grid charge to the
+stop soc (only while it is switched on; with the reserve above the start soc
 nothing is planned), a one-time grid charge as goal, a loadpoint's
 circuit power as its limit and the priorities. It can run locally: install the
 addon **evcc optimizer** and set **OPTIMIZER_URI** to its address, e.g.

@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.316.0-lm7
+
+- Optimizer: soc-based grid charging as a second planning pass. The battery
+  forecast now discharges to the start soc and then shows the grid charge to
+  the stop soc within the charging time at the grid charge power, instead of
+  holding at the stop soc. Whether it charges again later is up to the
+  optimizer. Only the forecast changes, nothing is switched.
+
 ## 0.316.0-lm6
 
 - **OeMAG removed**: the OeMAG market price feed-in tariff with its monthly
