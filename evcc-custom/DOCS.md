@@ -238,6 +238,11 @@ your limit, the limit rises to that peak minus the **buffer** (0–5 kW, default
 keeps showing your own limit and adds "Grenze diesen Monat". A new month, or
 switching it off, returns to your own limit.
 
+**Stromkreis-Grenze mitziehen** (optional): the chosen circuit's power limit
+rises along with the raised limit, never below its configured value, and is back
+at it with the next month. Choose it only for a circuit that is your peak limit,
+not for the agreed connection power.
+
 ### Capacity tariff (Leistungstarif)
 
 Lastmanagement-Details → **Leistungstarif**: price per kW and year up to a
@@ -307,6 +312,12 @@ peak shaving (15 minute average, reserve, setpoint) and battery grid charging;
 below every load on a circuit, highest priority first, with its state, and the
 last 20 events (shed, throttled, peak covered, grid charging paused or
 blocked). The events are kept in memory and start empty after a restart.
+
+The switch **Lastmanagement** at the top turns load management off: the power
+limits of all circuits (e.g. a circuit used as peak limit) no longer throttle
+wallboxes, heaters or grid charging. Fuses (current limits), §14a and battery
+peak shaving stay active. Your configuration is not changed; switching on
+restores the limits. The setting survives a restart.
 
 **Mehr → Peak Shaving** shows, per month, the highest quarter hour with the
 battery (the actual grid draw) and without it (grid draw plus battery power,

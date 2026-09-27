@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.316.0-lm4
+
+- Load management switch (Mehr → Lastmanagement): off lifts the power limits
+  of all circuits, so wallboxes, heaters and grid charging are no longer
+  throttled for them. Fuses (current limits), §14a and battery peak shaving
+  stay active; the configuration is unchanged and on restores it. Survives a
+  restart.
+- Follow the peak can raise a chosen circuit's power limit along ("Stromkreis-
+  Grenze mitziehen"), never below its configured value, back with the next
+  month. Only for a circuit that is the peak limit, not the agreed connection
+  power.
+
 ## 0.316.0-lm3
 
 - Follow the peak (Lastmanagement-Details → Peak Shaving): once the month's
