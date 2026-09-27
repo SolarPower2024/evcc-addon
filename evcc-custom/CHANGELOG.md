@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.316.0-lm3
+
+- Follow the peak (Lastmanagement-Details → Peak Shaving): once the month's
+  highest quarter hour is above the peak limit, the limit rises to that peak
+  minus a buffer (default 0.5 kW), so the battery no longer shaves below a
+  peak that is paid anyway. A new month starts with your own limit again.
+- Capacity tariff (new tile Lastmanagement-Details → Leistungstarif): price
+  per kW and year, threshold with a higher price above it, agreed power and
+  minimum; prefilled with the Austrian draft for 2027. Mehr → Peak Shaving
+  shows each month's capacity cost and what the battery saved.
+- Optimizer: a price tariff set as planner tariff (Tarife → Vorhersage
+  hinzufügen → Planer-Vorhersage) is the grid price the optimizer plans with;
+  statistics and costs keep the grid tariff. With a real price close to the
+  feed-in price (e.g. 10 ct vs 9 ct) the optimizer never discharges; a
+  planning price of at least 1.25 × feed-in (12 ct) lets it.
+- Charge once: the duration now includes the charging losses, so the target
+  is reached in time and "bis Uhrzeit" picks enough cheap slots; with an
+  unknown grid charge power the optimizer plans with the battery's maximum
+  charge power.
+
 ## 0.316.0-lm2
 
 - One priority: a loadpoint's regular evcc priority now also decides load

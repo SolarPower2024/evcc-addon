@@ -229,6 +229,25 @@ costs charging time; emptying the battery costs a cycle and leaves nothing for
 the next peak. Giving the wallbox the lowest priority lets load management take
 the first bite when the circuit limit is reached.
 
+### Follow the peak
+
+Lastmanagement-Details → Peak Shaving → **Follow the Peak**. A capacity tariff
+bills the month's highest quarter hour. Once the month already has a peak above
+your limit, the limit rises to that peak minus the **buffer** (0–5 kW, default
+0.5 kW; peak 10 kW → limit 9.5 kW), never below your own limit. The battery page
+keeps showing your own limit and adds "Grenze diesen Monat". A new month, or
+switching it off, returns to your own limit.
+
+### Capacity tariff (Leistungstarif)
+
+Lastmanagement-Details → **Leistungstarif**: price per kW and year up to a
+threshold, a higher price above it, the agreed power with the share billed at
+least, and a minimum power. Prefilled with the Austrian draft for 2027
+(33.82 €/kW/year up to 10 kW, double above, at least 20 % of the agreed power and
+2 kW; final amounts from December 2026). Mehr → Peak Shaving then shows each
+month's capacity cost, the saving against the peak without the battery (extra
+cost when grid charging raised the peak) and the total.
+
 ## 5. OeMAG feed-in tariff
 
 Add it under **Tarife & Vorhersagen → Einspeisevergütung hinzufügen**, provider
@@ -334,6 +353,14 @@ within the grid charge window, a one-time grid charge as goal, a loadpoint's
 circuit power as its limit and the priorities. It can run locally: install the
 addon **evcc optimizer** and set **OPTIMIZER_URI** to its address, e.g.
 `http://localhost:7050` on the same host.
+
+**Planning price.** With a real grid price close to the feed-in price (e.g.
+10 ct vs 9 ct OeMAG) the optimizer never discharges the battery: its losses
+make stored energy worth more than the saving. Add a planner tariff (Tarife →
+Vorhersage hinzufügen → Planer-Vorhersage → fixed price) of at least 1.25 ×
+the feed-in price, e.g. 12 ct: the optimizer plans with it, statistics and
+costs keep the grid tariff. Note that the planner tariff also drives vehicle
+charge plans, so do not use a fixed one together with a dynamic grid tariff.
 
 ## Requirements
 
