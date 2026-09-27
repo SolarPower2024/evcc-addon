@@ -5,7 +5,8 @@ configured, so this behaves like the official addon until you switch something o
 
 Everything is configured in the evcc ui under **Konfiguration →
 Lastmanagement-Details** (Batterie-Stromkreis, Prioritäten, Abwurfschutz,
-Batterie-Netzladen, Peak Shaving, Leistungstarif, Profile, Erweitert) and on the
+Batterie-Netzladen, Peak Shaving, Leistungstarif, Batterie-Vermessung, Profile,
+Erweitert) and on the
 **Hausbatterie** page (profile, switches, limits, soc values). **Mehr →
 Lastmanagement (Peak)** shows what
 load management is doing right now, **Mehr → Peak Shaving** the highest quarter
@@ -237,7 +238,8 @@ Lastmanagement-Details → Peak Shaving → **Follow the Peak**. A capacity tari
 bills the month's highest quarter hour. Once the month already has a peak above
 your limit, the limit rises to that peak minus the **buffer** (0–5 kW, default
 0.5 kW; peak 10 kW → limit 9.5 kW), never below your own limit. The battery page
-keeps showing your own limit and adds "Grenze diesen Monat". A new month, or
+keeps showing your own limit; Mehr → Lastmanagement (Peak) notes the raised
+one in the peak tile. A new month, or
 switching it off, returns to your own limit.
 
 The **load management (peak) circuit** (see Erweitert), when chosen, rises
@@ -255,44 +257,13 @@ least, and a minimum power. Prefilled with the Austrian draft for 2027
 month's capacity cost, the saving against the peak without the battery (extra
 cost when grid charging raised the peak) and the total.
 
-## 5. OeMAG feed-in tariff
-
-Add it under **Tarife & Vorhersagen → Einspeisevergütung hinzufügen**, provider
-**OeMAG Marktpreis (Einspeisung)**. A restart applies it, like any tariff.
-
-OeMAG publishes a month's market price only in the following month. Until then
-the latest published value is the running feed-in price, for display and for
-all calculations. On the **Stichtag Neuberechnung** (default 15th) that value
-becomes the final price of the previous month, and evcc recalculates once:
-
-- the stored 15 minute feed-in rates of the previous month
-- the price of the previous month's charging sessions: their solar share is
-  valued at the feed-in price, so it is revalued from the provisional to the
-  final price
-
-Each month is recalculated exactly once. If evcc is not running on that day it
-catches up on the next start within the month. Sessions from a time evcc did not
-store feed-in rates for are left unchanged. The log shows a line like
-`feed-in 2026-08 finalized at 0.08997/kWh: … recalculated`.
-
-The tariff's card shows the last finalized month and the next recalculation.
-**Monate anzeigen** lists every finalized month with market price, applied
-price and what was recalculated. There a month can be recalculated by hand,
-with the published or a corrected market price, for example if the value on the
-finalize day was wrong. A month recalculated by hand is not recalculated again
-automatically.
-
-The price comes from an unofficial scraper
-(github.com/chrsbrmr/oemag-marktpreis). Values that are missing, not in EUR/kWh
-or outside 0 to 1 EUR/kWh are ignored and the last good value is kept.
-
-### Second feed-in tariff (EEG)
+## 5. Second feed-in tariff (EEG)
 
 If part of the export goes to an energy community (EEG), add **Einspeisevergütung
 EEG hinzufügen** below the feed-in tariff: a fixed price, 0 is allowed. In its
 card, **Zähler festlegen** sets the Home Assistant energy counter of the EEG
 export (kWh or Wh). evcc then records the EEG export per quarter hour; the
-standard feed-in (OeMAG) is the total export of the grid meter minus EEG. Only
+standard feed-in is the total export of the grid meter minus EEG. Only
 counters are used, the grid power that drives pv control, load management and
 peak shaving is not touched, and self-consumption keeps being valued at the
 standard tariff. The split is available via `GET /api/feedinsplit`; its display
@@ -311,8 +282,11 @@ Abwurfschutz**, the minutes and a tick per loadpoint.
 
 Shown once a circuit is configured. Tiles for the load management (peak)
 circuit, or every circuit when none is chosen (load and limit),
-peak shaving (15 minute average, reserve, setpoint) and battery grid charging;
-below every load on a circuit, highest priority first, with its state, and the
+peak shaving (15 minute average, allowed grid draw until the quarter hour ends,
+reserve and setpoint, a limit raised by follow the peak) and battery grid
+charging, the overall state beside the switch; below every load on a circuit by
+priority (throttled and switched off from the bottom up), with its state and a
+lock while the shed guard holds it off, and the
 last 20 events (shed, throttled, peak covered, grid charging paused or
 blocked). The events are kept in memory and start empty after a restart.
 
@@ -364,20 +338,36 @@ load ignoring its limit is no longer counted on (3, 0 = off), and how long the
 optimizer may take to reach the stop soc of running soc-based battery grid
 charging, charging in the cheapest hours of it (3 h, 1 h = right away).
 
+### Consumption forecast and battery identification
+
+Under **Erweitert**, **Verbrauchsprognose → Nach Wochentag** forecasts each day
+of the home consumption from the same weekday of the last 8 weeks instead of
+the 28 day average (weekends differ from working days); **Sicherheitszuschlag
+Verbrauch** takes a higher percentile (60-90 %) instead of the mean, so the
+optimizer keeps more battery back.
+
+**Lastmanagement-Details → Batterie-Vermessung** learns the battery's usable
+capacity and round trip efficiency from the charging and discharging runs of
+the last 60 days (each over 20 % soc, at least 3 each way). With **Gemessene
+Werte verwenden** the optimizer plans with the measured capacity and one-time
+grid charging with capacity and efficiency; implausible values are not used.
+
 ## 10. Optimizer
 
 The optimizer (Konfiguration → Experimentell and Optimizer, needs a sponsor
 token) gets the settings above as inputs, so its plan, the battery soc forecast
 and its suggestions match what evcc does: the peak limit as grid import limit,
-the peak reserve as minimum soc, the start soc of soc-based grid charging as
-minimum soc (charging is planned ahead) and, while it runs, the stop soc as goal
-within the grid charge window, a one-time grid charge as goal, a loadpoint's
+the peak reserve as hard minimum soc, the start soc of soc-based grid charging as
+minimum soc and the stop soc as goal within the grid charge window, from now
+while it runs and else from where the battery is expected to fall to the start
+soc (only while it is switched on; with the reserve above the start soc
+nothing is planned), a one-time grid charge as goal, a loadpoint's
 circuit power as its limit and the priorities. It can run locally: install the
 addon **evcc optimizer** and set **OPTIMIZER_URI** to its address, e.g.
 `http://localhost:7050` on the same host.
 
 **Planning price.** With a real grid price close to the feed-in price (e.g.
-10 ct vs 9 ct OeMAG) the optimizer never discharges the battery: its losses
+10 ct vs 9 ct) the optimizer never discharges the battery: its losses
 make stored energy worth more than the saving. Add a planner tariff (Tarife →
 Vorhersage hinzufügen → Planer-Vorhersage → fixed price) of at least 1.25 ×
 the feed-in price, e.g. 12 ct: the optimizer plans with it, statistics and

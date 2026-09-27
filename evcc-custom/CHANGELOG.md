@@ -1,5 +1,27 @@
 # Changelog
 
+## 0.316.0-lm6
+
+- **OeMAG removed**: the OeMAG market price feed-in tariff with its monthly
+  recalculation is gone (kept aside for later). If your feed-in tariff uses
+  "OeMAG Marktpreis", switch it to another tariff (e.g. a fixed price) before
+  updating. The EEG split stays.
+- Optimizer: soc-based grid charging is planned ahead. The battery forecast
+  now shows the charge from the start to the stop soc where the battery is
+  expected to reach the start soc, instead of staying at the start soc. The
+  peak shaving reserve stays a hard minimum; with it above the start soc no
+  charging is planned. A floor set this way is no longer shown as "leer".
+- Consumption forecast by weekday and a consumption safety margin
+  (Lastmanagement-Details → Erweitert).
+- Battery identification (Lastmanagement-Details → Batterie-Vermessung):
+  usable capacity and efficiency learned from the stored slots, optionally
+  used by the optimizer and one-time grid charging.
+- Texts: battery page without the peak details (now only in Mehr →
+  Lastmanagement (Peak)) and the one-time charging hint; overview with the
+  state beside the switch, the shed guard lock only while it holds a load off,
+  "dimmen/abschalten von unten nach oben"; shorter peak statistics and
+  priority dialogs.
+
 ## 0.316.0-lm5
 
 - Load management (peak) circuit (Lastmanagement-Details → Erweitert): the
