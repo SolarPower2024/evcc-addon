@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.316.0-lm9
+
+- Optimizer: grid charging is planned slot by slot as evcc charges, while it
+  runs and from where the battery reaches the start soc. The plan charges from
+  the first slot with room below the limit, so the suggestion no longer says to
+  hold while evcc is charging. During a peak that pauses the charge the battery
+  covers the part above the limit (above the reserve it runs freely). Switched
+  grid charging without a charge power entity draws its full power, which the
+  forecast shows over the limit, as it happens.
+- Optimizer: the forecast is planned again right away when grid charging starts
+  or stops, and a changed setting arriving during a planning run is planned
+  right after it instead of waiting for the next slot.
+
 ## 0.316.0-lm8
 
 - Optimizer: the peak shaving reserve covers peaks in the forecast. Where the

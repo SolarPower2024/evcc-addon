@@ -371,8 +371,10 @@ plan would go over the limit while the battery holds the reserve, it is planned
 again and the battery covers the part above the limit below the reserve, down
 to its own minimum soc; what charges below the reserve (pv surplus, running or
 one-time grid charging) stays there for peaks. Without peaks it stops at the
-reserve. Grid charging is planned only with the room below the limit and pauses
-while the demand exceeds it. It can run locally: install the
+reserve. Grid charging is planned slot by slot as evcc charges, only with the room below
+the limit, and pauses while the demand exceeds it (switched grid charging
+without a charge power entity draws its full power, also in the forecast). A
+start or stop of grid charging plans again right away. It can run locally: install the
 addon **evcc optimizer** and set **OPTIMIZER_URI** to its address, e.g.
 `http://localhost:7050` on the same host.
 
