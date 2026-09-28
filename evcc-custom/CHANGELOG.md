@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.316.0-lm8
+
+- Optimizer: the peak shaving reserve covers peaks in the forecast. Where the
+  grid would go over the limit while the battery holds the reserve, the battery
+  covers the part above the limit below the reserve, down to its own minimum
+  soc, as peak shaving does; without peaks it still stops at the reserve. What
+  charges below the reserve (pv, grid charging) stays there for peaks.
+- Optimizer: grid charging with peak shaving is planned only with the room below
+  the limit and pauses while the demand exceeds it (before, the forecast could
+  show charging over the limit). A peak running right now no longer hides grid
+  charging from the whole forecast.
+- Only the forecast changes, nothing is switched. A further planning pass that
+  fails keeps the plan before it.
+
 ## 0.316.0-lm7
 
 - Optimizer: soc-based grid charging as a second planning pass. The battery
