@@ -341,9 +341,16 @@ with peak shaving as long as the room below the limit takes.
 
 ### Consumption forecast and battery identification
 
-Under **Erweitert**, **Verbrauchsprognose → Nach Wochentag** forecasts each day
-of the home consumption from the same weekday of the last 8 weeks instead of
-the 28 day average (weekends differ from working days); **Sicherheitszuschlag
+Under **Erweitert**, **Verbrauchsprognose** chooses how the optimizer forecasts
+the home consumption: **evcc** (average of the last 28 days), **Nach
+Wochentag** (the same weekday of the last 8 weeks; weekends differ from working
+days) or **Manuell (Lastprofil)**: upload a csv right there with a column
+`zeit` (96 quarter hours or 24 hours) and one column per month in W, e.g.
+`01-werktag` and `01-wochenende` or just `01` (separator `;` or `,`,
+home consumption without wallboxes and battery, missing months take the
+nearest). It is mixed with the last 8 weeks, recent days counting more and the
+more the profile misses them; until a profile is uploaded evcc's forecast
+applies. **Sicherheitszuschlag
 Verbrauch** takes a higher percentile (60-90 %) instead of the mean, so the
 optimizer keeps more battery back.
 

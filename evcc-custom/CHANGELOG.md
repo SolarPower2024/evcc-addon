@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.316.1-lm1
+
+- Based on evcc master after 0.316.0 (59 commits, with all fixes of 0.316.1).
+  New from evcc among others: circuits can be created in the ui
+  (Konfiguration → Lastmanagement), site country setting, confirmation before
+  grid discharge, battery limit soc together with the battery mode, loadpoints
+  start in their default mode after a restart. Circuits kept in the old yaml
+  keep working (shown as "veraltet"). Moving them to the new circuit dialog
+  gives them new names: choose the battery circuit and the load management
+  (peak) circuit again under Lastmanagement-Details.
+- Optimizer: the battery's upper soc bound now comes from evcc (full capacity
+  without soc limits) instead of the fork's own fallback. Same plans as before.
+- Consumption forecast for the optimizer, under Lastmanagement-Details →
+  Erweitert → Verbrauchsprognose: evcc (28 day average), per weekday, or
+  manual from an uploaded load profile (csv, W per quarter hour or hour and
+  month, working days and weekends apart). The profile is mixed with the last
+  8 weeks, recent days counting more, and follows their level; a strong
+  deviation of the last 3 hours carries over into the next hours. Without a
+  profile evcc's forecast applies.
+
 ## 0.316.0-lm9
 
 - Optimizer: grid charging is planned slot by slot as evcc charges, while it
