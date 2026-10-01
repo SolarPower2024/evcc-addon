@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.316.1-lm2
+
+- Heater in stages: new heating device template "Home Assistant Heizstab in
+  Stufen" for a heater with one switch per stage, e.g. a 3 x 3 kW heating rod
+  switched per phase. One loadpoint (3 phases) instead of one switch loadpoint
+  per stage: evcc switches on as many whole stages as fit, load management
+  steps it down stage by stage instead of switching it off, and all stages are
+  set in one cycle. A higher stage waits for a delay (default 1 minute),
+  switching down is immediate. With a power sensor (e.g. a Home Assistant sum
+  helper of the stages) it shows "bereit" instead of "heizt" while its own
+  thermostat has cut out. The existing switch loadpoints keep working.
+- Phase switching: loadpoints with 1p/3p switching get optional min/max current
+  for 1-phase under Elektrik; the regular range is then the 3-phase one.
+  Switching to 3 phases only once 1-phase is at its maximum and the surplus
+  reaches the 3-phase minimum, back to 1 phase below it. Plus optional delays
+  to 3 phases and to 1 phase; empty = the enable and disable delay. Starting
+  and stopping charging keep the enable and disable delay. Without these values
+  nothing changes.
+
 ## 0.316.1-lm1
 
 - Based on evcc master after 0.316.0 (59 commits, with all fixes of 0.316.1).

@@ -393,6 +393,48 @@ the feed-in price, e.g. 12 ct: the optimizer plans with it, statistics and
 costs keep the grid tariff. Note that the planner tariff also drives vehicle
 charge plans, so do not use a fixed one together with a dynamic grid tariff.
 
+## 11. Heater in stages
+
+For a heater with one switch per stage, e.g. a 3 x 3 kW heating rod switched
+per phase: add a heater (Ladepunkt oder Heizung hinzufügen → Heizung) with the
+device **Home Assistant Heizstab in Stufen**. Enter the switches of stage 1 to
+3, the power per stage and, recommended, a power sensor with the total power
+(e.g. a Home Assistant helper "combine the state of several sensors", type
+sum). Set the loadpoint to 3 phases when there is one stage per phase.
+
+evcc switches on as many whole stages as fit into the released power, never
+rounding up a partial stage. Load management steps it down stage by stage
+(9 → 6 → 3 kW) instead of switching it off, and a load with a higher priority
+takes the power stage by stage. Switching down is immediate, highest stage
+first; a higher stage waits until the last change is the set delay old
+(Erweitert, default 1 minute). With a power sensor, a draw up to the standby
+power (default 15 W) shows **bereit** instead of **heizt**, e.g. while the
+heater's own thermostat has cut out; the loadpoint stays on.
+
+Moving from one switch loadpoint per stage: create the new heater, set its
+priority, shed guard and the solar share in the profiles, then delete the old
+switch loadpoints.
+
+## 12. Phase switching: currents and delays
+
+Loadpoints whose charger switches between 1 and 3 phases get more fields under
+**Elektrik**:
+
+- **Minimaler / Maximaler Strom 1-phasig** (optional): the current range on one
+  phase. The regular fields are then the 3-phase range. Switching to 3 phases
+  needs 1-phase at its maximum and the surplus at the 3-phase minimum;
+  switching back happens below the 3-phase minimum. Example: 1-phase up to
+  about 4 kW and 3-phase from 5 kW: 1-phasig 6-17 A, 3-phasig 7.3-16 A (7 or
+  8 A if the charger only takes whole amps).
+- **Verzögerung auf 3 Phasen / auf 1 Phase** (optional, minutes): how long the
+  surplus has to allow or miss 3 phases before switching. Empty = the enable
+  and disable delay. Starting and stopping charging keep those, so charging
+  can start after 1 minute while the phases only switch after e.g. 5 minutes.
+
+A switch comes up to one control cycle after the delay. After every switch
+evcc waits 60 s before it switches again. Empty fields behave as the official
+evcc.
+
 ## Requirements
 
 The battery needs `modeNormal` and `modeCharge` scripts configured on the Home
