@@ -1,7 +1,9 @@
 # evcc custom
 
-evcc with a few additions on top of upstream. All of them are inert until
-configured, so this behaves like the official addon until you switch something on.
+evcc with additions for load management, the home battery and peak shaving.
+All of them are inert until configured, so this behaves like the official addon
+until you switch something on. Everything is set up in the ui, no `evcc.yaml`
+entries are needed.
 
 Everything is configured in the evcc ui under **Konfiguration →
 Lastmanagement-Details** (Batterie-Stromkreis, Prioritäten, Abwurfschutz,
@@ -24,15 +26,9 @@ Set it under **Lastmanagement-Details → Prioritäten** for every loadpoint on 
 circuit and for the home battery once it is assigned to one: drag the loads into
 order, the most important on top. A drag numbers all of them from the bottom
 (0, 1, 2 …, at most 10). A loadpoint's value is also shown and editable in its
-own settings. Changes apply immediately. Loads without a circuit do not take part and are not listed.
-
-Earlier versions had a separate load management priority per loadpoint
-(`lmpriority`). On the first start of this version those values are taken over
-into the loadpoints' priority once (a log line names each one); the pv surplus
-order follows them from then on.
-
-Loads only take part when they sit on a `circuit`. Without differing
-priorities nothing changes versus upstream.
+own settings. Changes apply immediately. Loads without a circuit do not take
+part and are not listed. Without differing priorities nothing changes versus
+the official evcc.
 
 Recovery uses the same mechanism in reverse: power that frees up stays withheld
 from lower-priority loads for as long as someone above still reports unmet
@@ -52,8 +48,9 @@ again. The log shows a warning and the overview the event "folgt der Vorgabe
 nicht".
 
 **Home Assistant switches** (heaters and the like) can only be on or off, so
-load management switches them on only when their whole power fits and off when
-it no longer does. Enter the power the device draws when on in the switch's
+load management switches them on only when their whole power fits, against
+the circuit's power limit and its current limit (fuse) alike, and off when it
+no longer does. Enter the power the device draws when on in the switch's
 field **Leistung** (W). evcc checks it before switching on and uses it while
 there is no measurement; without a power sensor it is also shown as the
 device's power. Without the field evcc uses the last measured power, or 3680 W
@@ -62,8 +59,9 @@ device's power. Without the field evcc uses the last measured power, or 3680 W
 ## 2. Battery in load management
 
 The home battery's grid charging power counts against a circuit. Assign the
-circuit under **Lastmanagement-Details → Batterie-Stromkreis**; the circuit
-needs a power limit in kW (`maxPower`), a current limit alone is not checked.
+circuit under **Lastmanagement-Details → Batterie-Stromkreis**; for the
+battery the circuit needs a power limit in kW, a current limit alone is not
+checked.
 
 Under **Batterie-Netzladen** you choose how the battery charges from the grid:
 
@@ -76,33 +74,22 @@ Under **Batterie-Netzladen** you choose how the battery charges from the grid:
   Home Assistant automation sets the battery's charge power from it. The entity
   needs min 0, max at least the expected charge power and step 1.
 
-Outside the ui the same settings exist in `evcc.yaml`:
-
-```yaml
-site:
-  loadmanagement:
-    timeout: 10m
-    battery:
-      circuit: main   # the circuit the battery draws from, empty = not managed
-      priority: 0     # shed before everything else
-      power: 5000     # expected grid charge power in W
-      phases: 3
-      holdoff: 5m     # wait before retrying after a shed
-```
-
 A battery driven through Home Assistant mode scripts can only be switched on or
-off, so the **full** `power` has to fit into the budget. Set it to the power the
-battery realistically draws, not its nameplate maximum — otherwise grid charging
-blocks itself unnecessarily. If omitted it falls back to the sum of the battery
-meters' `maxchargepower`.
+off, so the **full expected charge power** (Batterie-Netzladen) has to fit into
+the budget. Set it to the power the battery realistically draws, not its
+nameplate maximum, otherwise grid charging blocks itself unnecessarily. Empty
+falls back to the sum of the battery meters' maximum charge power; with neither,
+grid charging on a circuit stays off.
 
-`holdoff` prevents flapping: stopping the battery frees exactly the power that
-would make it start again.
+After load management stopped grid charging it waits (Erweitert, default
+5 minutes), as stopping it frees exactly the power that would let it start
+again.
 
 ## 3. Soc-based grid charging
 
 A switch plus a start and a stop soc, independent of the price-based grid charge
-limit. Configure it in the evcc ui under **Hausbatterie**. Charging starts once
+limit. Configure it on the **Hausbatterie** page, card **Netzladen nach
+Ladestand**. Charging starts once
 the soc is at or below the start value and runs until the stop value is reached.
 
 It goes through the same battery mode path as price-based grid charging, so a
@@ -123,7 +110,7 @@ Below it on the battery page: **Einmalig bis … aus dem Netz laden**, right
 away or **bis Uhrzeit** at the cheapest time before it (from the planner
 tariff; right away when the time has passed or the duration is unknown). It
 switches itself off at the target soc, continues across restarts and has a
-cancel button. The same checks as soc-based grid charging apply (peak,
+cancel button. It ends by itself if the battery is removed. The same checks as soc-based grid charging apply (peak,
 circuit, charge power).
 
 ```
@@ -194,21 +181,9 @@ The dialog shows which one is in use. A counter that fails or stops updating is
 replaced by the grid power until the quarter hour ends, with a warning in the
 log. Grid charging still pauses on the momentary demand above the limit.
 
-Outside the add-on there is no supervisor, so the endpoint has to be given once
-in `evcc.yaml`:
-
-```yaml
-site:
-  loadmanagement:
-    peakshaving:
-      uri: http://homeassistant.local:8123
-      freevalue: 10000 # optional, the "discharge freely" signal
-      hysteresis: 2 # optional, soc band around the reserve in %
-```
-
 ### Why the demand is not simply the grid meter reading
 
-Once the battery starts shaving, the grid meter no longer shows the load — it
+Once the battery starts shaving, the grid meter no longer shows the load, it
 shows the result of the controller's own work. Deriving the setpoint from it
 would oscillate: shave, see a compliant grid value, stop, see the peak return.
 evcc therefore adds the battery power back to recover the underlying demand,
@@ -407,7 +382,7 @@ rounding up a partial stage. Load management steps it down stage by stage
 (9 → 6 → 3 kW) instead of switching it off, and a load with a higher priority
 takes the power stage by stage. Switching down is immediate, highest stage
 first; a higher stage waits until the last change is the set delay old
-(Erweitert, default 1 minute). With a power sensor, a draw up to the standby
+(advanced field of the device, default 1 minute). With a power sensor, a draw up to the standby
 power (default 15 W) shows **bereit** instead of **heizt**, e.g. while the
 heater's own thermostat has cut out; the loadpoint stays on.
 

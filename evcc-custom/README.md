@@ -1,7 +1,6 @@
 # evcc custom
 
-evcc with priority load management, battery participation in load management and
-soc-based grid charging.
+evcc with additions for load management, the home battery and peak shaving.
 
 See [DOCS.md](DOCS.md) for configuration.
 
