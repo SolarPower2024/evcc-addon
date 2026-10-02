@@ -5,8 +5,9 @@
 - Load management: switch devices (heaters on a Home Assistant switch) now also
   respect a circuit's current limit (fuse), not only its power limit.
 - One-time grid charging ends by itself when the battery is removed.
-- The yaml key `lmpriority` at a loadpoint is no longer read (set priorities in
-  the ui); an `evcc.yaml` still containing it fails to start.
+- Nothing of the fork is read from `evcc.yaml` any more, everything is set in
+  the ui: `lmpriority` at a loadpoint and `loadmanagement` under `site` are
+  gone. An `evcc.yaml` still containing them fails to start; remove them.
 - Internal restructuring after a code review (load management and peak shaving
   in packages of their own, fewer changes in evcc's own files). No change in
   behaviour.
