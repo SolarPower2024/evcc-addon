@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.316.1-lm5
+
+- evcc master up to 3 October 2026 taken in (61 commits after 0.316.1-lm4):
+  battery-supported charging ends on grid import, the optimizer re-runs right
+  after battery settings change, an unsupported battery mode falls back to the
+  closest supported one, local network hosts suggested in device setup, new
+  device and tariff templates.
+- Phase switching: the 1-phase minimum current now builds on evcc's own
+  projection of a pending switch to 1 phase. No change in behaviour.
+- The temporary handling of the old `lmpriority` key (0.316.1-lm4) is removed.
+  Update from 0.316.1-lm4; coming from an older version, start lm4 once first.
+
 ## 0.316.1-lm4
 
 - Fix: 0.316.1-lm3 failed to start with "invalid keys: lmpriority" when a
