@@ -1,10 +1,12 @@
 # Changelog
 
-## Unreleased
+## 0.316.1-lm3
 
 - Load management: switch devices (heaters on a Home Assistant switch) now also
   respect a circuit's current limit (fuse), not only its power limit.
 - One-time grid charging ends by itself when the battery is removed.
+- The EEG counter stays shown in the ui when Home Assistant cannot be reached
+  at startup.
 - Nothing of the fork is read from `evcc.yaml` any more, everything is set in
   the ui: `lmpriority` at a loadpoint and `loadmanagement` under `site` are
   gone. An `evcc.yaml` still containing them fails to start; remove them.
