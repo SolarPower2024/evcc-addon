@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.316.1-lm4
+
+- Fix: 0.316.1-lm3 failed to start with "invalid keys: lmpriority" when a
+  loadpoint once moved from `evcc.yaml` to the ui still had the old
+  `lmpriority` stored in the database. The key is accepted again and removed
+  from the database at the first start; the log shows "old lmpriority removed
+  from the stored loadpoint config". Nothing to do for you.
+
 ## 0.316.1-lm3
 
 - Load management: switch devices (heaters on a Home Assistant switch) now also
