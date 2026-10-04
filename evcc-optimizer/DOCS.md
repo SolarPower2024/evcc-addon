@@ -25,10 +25,10 @@ Both addons use the host network, so nothing else needs to be connected. Port
 image tag in `Dockerfile` its build. Both are bumped together when evcc custom
 moves to an evcc version that expects a newer optimizer.
 
-Current pin: build of 2026-09-14. evcc 0.316 was built against the optimizer
-interface of 2026-09-17, which only adds `c_active` (a vehicle already charging
-at the start of the plan). This build ignores the field, so a running charge
-is not treated as already started; everything else works.
+Current pin: build of 2026-10-04, the newest published image of the official
+optimizer. It understands `c_active` (a vehicle already charging at the start
+of the plan), which evcc 0.316 sends, so a running charge counts as already
+started.
 
 ## Resources
 
