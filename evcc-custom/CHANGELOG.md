@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.316.1-lm6
+
+- Peak shaving: the setpoint and the grid charge power are fitted to the
+  entity's min, max and step (some batteries misbehave on values off the step).
+  The entity no longer needs min 0, max 10000 and step 1.
+- Peak shaving: a value is only written when the entity holds a different one.
+  New **Schreib-Toleranz** under Lastmanagement-Details → Peak Shaving (default
+  0 W = every change) skips smaller changes, sparing devices that store each
+  write.
+- Peak shaving: without meter values for over 2 minutes the battery is released
+  (free value) and grid charging pauses until the values are back. Before, the
+  last setpoint stayed in the entity.
+- Phase switching: if the minimum current on 1 phase ends up above the 1-phase
+  maximum (e.g. changed through Home Assistant), it charges at the 1-phase
+  maximum with a warning instead of stopping the loadpoint.
+- Heater in stages: the mode buttons read Aus / Smart / Ein instead of Schnell.
+- Nothing to do for you.
+
 ## 0.316.1-lm5
 
 - evcc master up to 3 October 2026 taken in (61 commits after 0.316.1-lm4):

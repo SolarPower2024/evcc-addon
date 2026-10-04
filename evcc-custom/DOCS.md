@@ -71,8 +71,8 @@ Under **Batterie-Netzladen** you choose how the battery charges from the grid:
   evcc writes the permitted charge power in W every cycle, the smallest of the
   expected charge power, the room below the peak limit (when peak shaving is on)
   and the room in the circuit. Below 500 W it does not charge and writes 0. Your
-  Home Assistant automation sets the battery's charge power from it. The entity
-  needs min 0, max at least the expected charge power and step 1.
+  Home Assistant automation sets the battery's charge power from it. The value
+  is fitted to the entity's min, max and step, rounded down so the limits hold.
 
 A battery driven through Home Assistant mode scripts can only be switched on or
 off, so the **full expected charge power** (Batterie-Netzladen) has to fit into
@@ -135,17 +135,24 @@ Configure it on the **Hausbatterie** page: a switch, the peak limit (2–20 kW i
 evcc only computes the setpoint. The Home Assistant automation reading the
 entity does the actual discharging.
 
-While peak shaving is on, the setpoint is written in **every cycle**, even when
-it has not changed, so a value changed in Home Assistant (by hand, an
-automation or a restart) is corrected in the next cycle. While it is off, the
-free value is written once and then nothing more. The grid charge power entity
-is written every cycle either way.
+Every cycle evcc reads the entity and only writes when the value differs, so a
+device that stores each write is spared, and a value changed in Home Assistant
+(by hand, an automation or a restart) is still corrected in the next cycle.
+**Schreib-Toleranz** (Lastmanagement-Details → Peak Shaving, default 0 W =
+every change) skips smaller changes; stop (min) and maximum are always
+written. It applies to the grid charge power entity too. While peak shaving is
+off, the free value is written once and then nothing more.
 
 The target entity is set under **Lastmanagement-Details → Peak Shaving**, just
 the entity id, for example `input_number.battery_peak_power`. Running as this
 add-on, evcc reaches Home Assistant through the supervisor, so no url and no
-token are needed. The entity needs **min 0, max at least 10000 and step 1**,
-otherwise Home Assistant rejects the values.
+token are needed. Every value is fitted to the entity's min, max and step (the
+setpoint rounded up so the peak stays covered); a free value above max becomes
+max.
+
+If evcc gets no meter values for over 2 minutes, it writes the free value, so
+the battery covers any demand by ordinary self-consumption, and grid charging
+pauses until the values are back. Both show in the log.
 
 Everything is written in watts; only the limit is shown in kW.
 
@@ -400,7 +407,9 @@ Loadpoints whose charger switches between 1 and 3 phases get more fields under
   needs 1-phase at its maximum and the surplus at the 3-phase minimum;
   switching back happens below the 3-phase minimum. Example: 1-phase up to
   about 4 kW and 3-phase from 5 kW: 1-phasig 6-17 A, 3-phasig 7.3-16 A (7 or
-  8 A if the charger only takes whole amps).
+  8 A if the charger only takes whole amps). Should the minimum on 1 phase end
+  up above the 1-phase maximum (min current changed later, e.g. through Home
+  Assistant), it charges at the 1-phase maximum and logs a warning.
 - **Verzögerung auf 3 Phasen / auf 1 Phase** (optional, minutes): how long the
   surplus has to allow or miss 3 phases before switching. Empty = the enable
   and disable delay. Starting and stopping charging keep those, so charging
