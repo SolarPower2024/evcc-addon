@@ -248,8 +248,11 @@ export (kWh or Wh). evcc then records the EEG export per quarter hour; the
 standard feed-in is the total export of the grid meter minus EEG. Only
 counters are used, the grid power that drives pv control, load management and
 peak shaving is not touched, and self-consumption keeps being valued at the
-standard tariff. The split is available via `GET /api/feedinsplit`; its display
-on the new energy page follows with a later evcc version.
+standard tariff. The energy page (tab **Energie**, shown with **Einstellungen →
+Experimentell**) splits the export in its grid card: EEG as its own lighter
+bar, both amounts in the legend, and the revenue of the standard feed-in and of
+EEG as separate tiles, also without a grid price. The data is also available
+via `GET /api/feedinsplit`.
 
 ## 6. Shed guard (Abwurfschutz)
 

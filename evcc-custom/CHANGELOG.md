@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.316.2-lm1
+
+- evcc master up to 5 October 2026 taken in (29 commits after 0.316.1-lm6,
+  includes all fixes of evcc 0.316.2): the new **Energie** page with history,
+  analysis and savings replaces the old history page. It is still experimental:
+  turn on **Einstellungen → Experimentell** to get the Energie tab. Also: a
+  continuous device (e.g. heat pump) charging while disabled is no longer
+  reported as an error, heating devices convert current to power with the
+  active phases, new tariff and device templates.
+- Second feed-in tariff (EEG): the energy page splits the export in its grid
+  card: EEG as its own lighter bar, both amounts in the legend, and the revenue
+  of the standard feed-in and of EEG as separate tiles. The EEG counter is not
+  listed again among the meters. Only with an EEG counter set.
+- To do: turn on Einstellungen → Experimentell to see the Energie tab.
+
 ## 0.316.1-lm6
 
 - Peak shaving: the setpoint and the grid charge power are fitted to the
