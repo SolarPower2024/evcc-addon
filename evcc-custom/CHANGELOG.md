@@ -1,5 +1,35 @@
 # Changelog
 
+## 0.316.2-lm3
+
+Includes 0.316.2-lm2, which was not released as an add-on.
+
+- New **Log-Datei** on the log page: writes the log to daily files in
+  `/config/logs`, readable through the Samba share under `addon_configs`. Level
+  (default debug) and retention (default 14 days) are set in the dialog, at
+  most 1 GB together. Off by default.
+- New **Schnee auf PV** switch on the forecast page: while snow covers the
+  modules the optimizer plans without solar yield. It turns itself off once the
+  system delivers 70 % of the forecast for 1 h. Off by default.
+- New **Schnee automatisch erkennen** on the forecast page (needs an Open-Meteo
+  solar forecast): 1 cm of new snow within 24 h at up to +1 °C, also forecast
+  for the coming night, turns **Schnee auf PV** on. Turning off still happens
+  by the measurement or by hand. Off by default.
+- Peak shaving statistics: the saving counts only above the month's peak limit
+  (the highest limit set by hand in the month), so grid charging below it no
+  longer shows as extra cost. On a phone the month table is a two-line list.
+- **Einmalig laden** (battery page): right away or by a time is now picked in
+  the sentence like the soc.
+- Heater in stages: the config page shows each stage's switch
+  (Stufen an · an · aus) with the loadpoint's values.
+- Heater in stages without a power sensor: the assumed power (stages × power
+  per stage) is only used for control and load management. The home
+  consumption, energy flow and energy history count the heater's real draw
+  as part of the house; the heater card shows the assumption as "≈ 6,0 kW".
+- To do: turn on the log file via Log page → Log-Datei if you want to keep the
+  log for more than an hour or two; turn on Prognose → Solar → Schnee
+  automatisch erkennen if you use an Open-Meteo solar forecast.
+
 ## 0.316.2-lm1
 
 - evcc master up to 5 October 2026 taken in (29 commits after 0.316.1-lm6,

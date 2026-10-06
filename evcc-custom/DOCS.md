@@ -106,8 +106,9 @@ POST /api/batterysocgridchargestop/{soc}
 
 ### Charge once
 
-Below it on the battery page: **Einmalig bis … aus dem Netz laden**, right
-away or **bis Uhrzeit** at the cheapest time before it (from the planner
+Below it on the battery page: **Einmalig bis … aus dem Netz laden, …**: both
+values are picked in the sentence, the soc and **sofort** (right away) or
+**bis HH:MM** (half-hour steps) at the cheapest time before it (from the planner
 tariff; right away when the time has passed or the duration is unknown). It
 switches itself off at the target soc, continues across restarts and has a
 cancel button. It ends by itself if the battery is removed. The same checks as soc-based grid charging apply (peak,
@@ -237,7 +238,9 @@ least, and a minimum power. Prefilled with the Austrian draft for 2027
 (33.82 €/kW/year up to 10 kW, double above, at least 20 % of the agreed power and
 2 kW; final amounts from December 2026). Mehr → Peak Shaving then shows each
 month's capacity cost, the saving against the peak without the battery (extra
-cost when grid charging raised the peak) and the total.
+cost when grid charging raised the peak) and the total. The saving only counts
+above the month's limit (the highest peak limit set by hand in the month, not
+the one raised by follow the peak): grid charging below it costs nothing extra.
 
 ## 5. Second feed-in tariff (EEG)
 
@@ -394,7 +397,14 @@ takes the power stage by stage. Switching down is immediate, highest stage
 first; a higher stage waits until the last change is the set delay old
 (advanced field of the device, default 1 minute). With a power sensor, a draw up to the standby
 power (default 15 W) shows **bereit** instead of **heizt**, e.g. while the
-heater's own thermostat has cut out; the loadpoint stays on.
+heater's own thermostat has cut out; the loadpoint stays on. Without a power
+sensor the power is an assumption (stages switched on × power per stage).
+Control and load management use it; the home consumption, energy flow, energy
+history and sessions only count measured power, so the heater's real draw
+shows in the home consumption, also while its thermostat has cut out. The
+heater card shows the assumption as "≈ 6,0 kW"; a kWh charge limit does not
+apply then. The config page lists each stage's switch with the
+loadpoint's values (**Stufen an · an · aus**).
 
 Moving from one switch loadpoint per stage: create the new heater, set its
 priority, shed guard and the solar share in the profiles, then delete the old
@@ -421,6 +431,36 @@ Loadpoints whose charger switches between 1 and 3 phases get more fields under
 A switch comes up to one control cycle after the delay. After every switch
 evcc waits 60 s before it switches again. Empty fields behave as the official
 evcc.
+
+## 13. Log file (Log-Datei)
+
+evcc's log page keeps only the last 10,000 lines, an hour or two at debug. On
+the log page, the button **Log-Datei** writes the log to daily files as well:
+
+- **Log-Datei schreiben**: off by default, nothing is written while off.
+- **Level** (default debug): only for the file, the add-on log keeps its level.
+- **Aufbewahrung** (1-90 days, default 14, today included).
+
+The files are `/config/logs/evcc-YYYY-MM-DD.log`, older days packed as
+`.log.gz`, at most 1 GB together (the oldest go first; if today's file alone
+reaches 1 GB it pauses until the next day). Read them through the Samba share
+under `addon_configs\<id>_evcc_custom\logs`. Switching on also writes the lines
+from before, so the start of evcc is in the file after every restart.
+
+## 14. Snow on PV (Schnee auf PV)
+
+Prognose-Seite → Solar → **Schnee auf PV**. While on, the optimizer plans
+without solar yield (the forecast shown and the control stay as they are).
+Turns off by itself once the production reaches 70 % of the forecast for one
+hour (quarter hours with less than 100 Wh forecast do not count). Off by
+default, kept across restarts.
+
+**Schnee automatisch erkennen** (only with an Open-Meteo solar forecast): every
+30 minutes the snowfall at the forecast's location is checked. 1 cm within 24
+hours at up to +1 °C, including snow forecast until the next sunrise, turns the
+switch on. Thawing is not predicted, the switch goes off by the measurement.
+Snow already counted does not turn it on again, also after turning it off by
+hand; new snow does.
 
 ## Requirements
 
