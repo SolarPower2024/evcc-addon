@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.316.2-lm4
+
+- Phone layout: the **Log-Datei** button sits next to the search field instead
+  of under it; the assumed power of a heater in stages without a power sensor
+  shows in whole kW ("≈ 6 kW") so it is no longer cut off.
+- **Einmalig laden** (battery page): the sentence under the title reads
+  "Bis 80 % aus dem Netz laden, sofort" (no second "einmalig").
+- Forecast page: the help of **Schnee auf PV** and **Schnee automatisch
+  erkennen** is a tooltip on the ⓘ next to each switch instead of text under
+  the chart, with shorter texts.
+- Add-on: the config folder is mapped as `app_config` (new name of
+  `addon_config`), which removes the supervisor warning. Path and Samba share
+  stay the same.
+
 ## 0.316.2-lm3
 
 Includes 0.316.2-lm2, which was not released as an add-on.

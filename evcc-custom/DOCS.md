@@ -106,7 +106,7 @@ POST /api/batterysocgridchargestop/{soc}
 
 ### Charge once
 
-Below it on the battery page: **Einmalig bis … aus dem Netz laden, …**: both
+Below it on the battery page: **Einmalig laden**, the sentence **Bis … aus dem Netz laden, …**: both
 values are picked in the sentence, the soc and **sofort** (right away) or
 **bis HH:MM** (half-hour steps) at the cheapest time before it (from the planner
 tariff; right away when the time has passed or the duration is unknown). It
@@ -402,7 +402,7 @@ sensor the power is an assumption (stages switched on × power per stage).
 Control and load management use it; the home consumption, energy flow, energy
 history and sessions only count measured power, so the heater's real draw
 shows in the home consumption, also while its thermostat has cut out. The
-heater card shows the assumption as "≈ 6,0 kW"; a kWh charge limit does not
+heater card shows the assumption as "≈ 6 kW"; a kWh charge limit does not
 apply then. The config page lists each stage's switch with the
 loadpoint's values (**Stufen an · an · aus**).
 
@@ -461,6 +461,8 @@ hours at up to +1 °C, including snow forecast until the next sunrise, turns the
 switch on. Thawing is not predicted, the switch goes off by the measurement.
 Snow already counted does not turn it on again, also after turning it off by
 hand; new snow does.
+
+The help of both switches is a tooltip on the ⓘ next to them.
 
 ## Requirements
 
