@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.316.2-lm5
+
+- Battery grid charging on a circuit now also keeps to the circuit's current
+  limit (A, e.g. the main fuse), not only to its power limit. The current is
+  the charge power spread over the battery phases (Erweitert, default 3).
+- Peak shaving: an entity for the discharge setpoint or the grid charge power
+  that is removed or replaced gets the free value or 0 W instead of keeping its
+  last setpoint.
+- Forecast page: **anpassen**, **Schnee auf PV** and **Schnee automatisch
+  erkennen** sit in one row under the chart.
+- Phone layout: the start button of **Einmalig laden** sits in its title row.
+- Heater in stages: the config page shows "Stufen ein · ein · aus".
+
 ## 0.316.2-lm4
 
 - Phone layout: the **Log-Datei** button sits next to the search field instead

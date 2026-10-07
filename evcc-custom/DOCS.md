@@ -76,7 +76,8 @@ Under **Batterie-Netzladen** you choose how the battery charges from the grid:
 
 A battery driven through Home Assistant mode scripts can only be switched on or
 off, so the **full expected charge power** (Batterie-Netzladen) has to fit into
-the budget. Set it to the power the battery realistically draws, not its
+the budget, against the circuit's power and its current limit (the current spread
+over the battery phases, Erweitert, default 3). Set it to the power the battery realistically draws, not its
 nameplate maximum, otherwise grid charging blocks itself unnecessarily. Empty
 falls back to the sum of the battery meters' maximum charge power; with neither,
 grid charging on a circuit stays off.
@@ -142,7 +143,9 @@ device that stores each write is spared, and a value changed in Home Assistant
 **Schreib-Toleranz** (Lastmanagement-Details → Peak Shaving, default 0 W =
 every change) skips smaller changes; stop (min) and maximum are always
 written. It applies to the grid charge power entity too. While peak shaving is
-off, the free value is written once and then nothing more.
+off, the free value is written once and then nothing more. An entity removed
+or replaced gets the free value, a removed grid charge power entity 0 W, so
+neither stays on its last setpoint.
 
 The target entity is set under **Lastmanagement-Details → Peak Shaving**, just
 the entity id, for example `input_number.battery_peak_power`. Running as this
@@ -404,7 +407,7 @@ history and sessions only count measured power, so the heater's real draw
 shows in the home consumption, also while its thermostat has cut out. The
 heater card shows the assumption as "≈ 6 kW"; a kWh charge limit does not
 apply then. The config page lists each stage's switch with the
-loadpoint's values (**Stufen an · an · aus**).
+loadpoint's values (**Stufen ein · ein · aus**).
 
 Moving from one switch loadpoint per stage: create the new heater, set its
 priority, shed guard and the solar share in the profiles, then delete the old
@@ -462,7 +465,8 @@ switch on. Thawing is not predicted, the switch goes off by the measurement.
 Snow already counted does not turn it on again, also after turning it off by
 hand; new snow does.
 
-The help of both switches is a tooltip on the ⓘ next to them.
+Both switches sit with **anpassen** in one row under the chart; their help is a
+tooltip on the ⓘ next to them.
 
 ## Requirements
 
