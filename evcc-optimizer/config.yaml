@@ -3,7 +3,6 @@ version: "2026.10.4"
 slug: evcc_optimizer
 description: Local optimizer for the evcc custom addon, instead of the cloud service
 url: https://github.com/SolarPower2024/evcc-addon
-stage: experimental
 
 boot: auto
 startup: application

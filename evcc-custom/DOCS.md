@@ -274,9 +274,9 @@ Abwurfschutz**, the minutes and a tick per loadpoint.
 Shown once a circuit is configured. Tiles for the load management (peak)
 circuit, or every circuit when none is chosen (load and limit),
 peak shaving (15 minute average, allowed grid draw until the quarter hour ends,
-reserve and setpoint, a limit raised by follow the peak) and battery grid
-charging, the overall state beside the switch; below every load on a circuit by
-priority (throttled and switched off from the bottom up), with its state and a
+reserve and setpoint, a limit raised by follow the peak), the overall state
+beside the switch; below every load on a circuit, including battery grid
+charging as "Batterie (Netzladen)", by priority (throttled and switched off from the bottom up), with its state and a
 lock while the shed guard holds it off, and the
 last 20 events (shed, throttled, peak covered, grid charging paused or
 blocked). The events are kept in memory and start empty after a restart.
@@ -316,7 +316,8 @@ and the battery page shows which one failed.
 
 ## 9. Advanced settings (Erweitert)
 
-Under **Lastmanagement-Details → Erweitert**: the **Stromkreis Lastmanagement
+Under **Lastmanagement-Details → Erweitert**, in four collapsed groups
+(Lastmanagement, Peak Shaving, Batterie-Netzladen, Optimizer): the **Stromkreis Lastmanagement
 (Peak)**, i.e. the circuit holding your peak limit beside a circuit for the fuse
 (only it is shown in the overview, lifted by the switch and raised by follow the
 peak; none = all circuits), the peak shaving reserve hysteresis (default 2 %),
@@ -467,6 +468,27 @@ hand; new snow does.
 
 Both switches sit with **anpassen** in one row under the chart; their help is a
 tooltip on the ⓘ next to them.
+
+## 15. Export forecast (Einspeise-Prognose)
+
+Lets a second evcc custom instance plan with the grid export the first one
+expects, through Home Assistant. Off by default.
+
+- **Instance A (writes):** Lastmanagement-Details → Erweitert → Optimizer →
+  **Einspeise-Prognose an Home Assistant**, e.g.
+  `sensor.evcc_einspeiseprognose` (only `sensor.*`, empty = off, add-on only).
+  After every optimizer run the planned export goes into the attribute
+  `forecast` as a list of `start`, `end` and `value` in W. evcc creates the
+  sensor itself, no helper needed. After a Home Assistant restart it is
+  missing until the next optimizer run.
+- **Instance B (reads):** Konfiguration → Solar-Vorhersage hinzufügen →
+  **Home Assistant Prognose-Entität**, pick the instance and the sensor
+  (attribute and interval under "erweitert"). An own solar forecast of B stays;
+  evcc adds both per quarter hour.
+- Never read it in the instance that writes it: the optimizer would plan with
+  double the solar power.
+- Keep the sensor out of the recorder:
+  `recorder: exclude: entities: [sensor.evcc_einspeiseprognose]`.
 
 ## Requirements
 

@@ -1,5 +1,31 @@
 # Changelog
 
+## 0.317.0-lm1
+
+- Based on evcc 0.317.0 (see the evcc release notes). Phase switching with
+  separate 1p currents: before switching up to 3p the charger drops to the 3p
+  minimum current.
+- New **export forecast**: the optimizer's planned grid export can be written
+  to a Home Assistant sensor (Lastmanagement-Details → Erweitert → Optimizer →
+  **Einspeise-Prognose an Home Assistant**). A second evcc custom instance
+  reads it as solar forecast with the new forecast **Home Assistant
+  Prognose-Entität**. Off by default.
+- Lastmanagement-Details → **Erweitert**: the fields sit in four collapsed
+  groups (Lastmanagement, Peak Shaving, Batterie-Netzladen, Optimizer).
+- Peak shaving statistics: two tiles (highest quarter hour with and without
+  the battery side by side; the month's saving with the total and
+  interventions) and a clearer month list.
+- Load management overview: the battery grid charging tile is gone, the
+  battery is listed as "Batterie (Netzladen)" with its power and state.
+- **Einmalig laden**: a round power button starts it and, filled while
+  running, stops it.
+- Energy flow: a heater in stages without a power sensor is no longer listed
+  under loadpoints (its assumed power counts in the home consumption).
+- Phone layout: on the log page refresh and search get a row each; the battery
+  card is titled "Netzladen nach SoC". Leaving the forecast page no longer
+  throws an error.
+- The add-on is no longer marked experimental.
+
 ## 0.316.2-lm5
 
 - Battery grid charging on a circuit now also keeps to the circuit's current
