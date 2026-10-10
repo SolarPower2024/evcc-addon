@@ -167,27 +167,28 @@ Everything is written in watts; only the limit is shown in kW.
 ### Battery type Marstek (Omnibattery)
 
 Lastmanagement-Details → Peak Shaving → **Batterietyp** (default BYD = the
-behaviour above). Omnibattery regulates a Marstek itself and only takes a
-setpoint under manual control. With **Marstek (Omnibattery)** also enter the
-battery's manual control switch (e.g. `switch.marstek_venus_battery_manual_mode`)
-and the force mode select (e.g. `select.marstek_venus_1_betriebsmodus_erzwingen`,
-options `None`, `Charge`, `Discharge`); for grid charging the charge power
-entity under Batterie-Netzladen. evcc then switches to manual only while it
-controls:
+behaviour above). With **Marstek (Omnibattery)** evcc does not set a
+discharge power but feeds Omnibattery's own peak shaving (Spitzenlastkappung),
+which regulates every second on its own meter. Enter its three entities:
+peak shaving switch (e.g. `switch.marstek_venus_system_spitzenlastkappung`),
+limit (`number.marstek_venus_system_spitzenlastkappung_limit`) and SOC
+threshold (`number.marstek_venus_system_spitzenlastkappung_soc_schwelle`);
+for grid charging also the manual control switch, the force mode select
+(options `None`, `Charge`, `Discharge`) and the charge power entity under
+Batterie-Netzladen.
 
-| Situation | Switch | Mode | Power |
-| --- | --- | --- | --- |
-| grid charging | on | `Charge` | charge power |
-| below the reserve, a peak | on | `Discharge` | discharge power = setpoint |
-| below the reserve, no peak | on | `None` | – |
-| otherwise | off | unchanged | – |
+| Situation | What evcc writes |
+| --- | --- |
+| peak shaving on | peak shaving on, limit = grid power allowed in the 15 minute window (whole watts), SOC threshold = reserve (at least 20 %) |
+| grid charging | manual on, `Charge`, charge power; afterwards charge power 0 and manual off |
+| peak shaving off, type changed or entity removed | peak shaving off, only if evcc switched it on |
 
-Switch, mode and power are written in this order and only when Home Assistant
-shows something else; a change by hand is corrected while evcc controls. The
-free value is never written. Home Assistant scripts for the evcc battery modes
-must no longer switch the manual control, the mode or the charge power. On the
-battery page the soc selects of soc grid charging and the reserve offer 15 %
-down to 11 % in 1 % steps for this type (a Marstek stops at 11 %).
+Below the reserve the battery keeps charging from PV and only covers peaks.
+There is no hysteresis for Marstek. Values are written only when Home Assistant
+shows something else. Home Assistant scripts for the evcc battery modes must
+no longer switch the manual control, the mode or the charge power. On the
+battery page the soc selects of soc grid charging offer 15 % down to 11 % in
+1 % steps for this type (a Marstek stops at 11 %); the reserve starts at 20 %.
 
 ### The 15 minute window
 

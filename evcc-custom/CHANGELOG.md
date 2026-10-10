@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.317.0-lm4
+
+- Peak shaving with a Marstek (Omnibattery): evcc now drives Omnibattery's own
+  peak shaving (Spitzenlastkappung) instead of switching the battery to manual
+  below the reserve. It writes the reserve as SOC threshold (from 20 %) and the
+  grid power allowed in the 15 minute window as limit, and switches it on with
+  peak shaving. Below the reserve the battery keeps charging from PV and only
+  covers peaks. Manual control only while grid charging; afterwards the charge
+  power is set back to 0. **To do:** under Lastmanagement-Details → Peak Shaving
+  enter the three Omnibattery entities (peak shaving switch, limit, SOC
+  threshold); the reserve must be at least 20 %. Until then set the reserve
+  below the current SoC or turn peak shaving off, otherwise the battery stays
+  in manual control.
+- Marstek: the SOC threshold is written on every reserve change, even with a
+  write tolerance set. The battery page shows the effective reserve (at least
+  20 %) and names the three entities when they are missing. No limit is written
+  when its entity is unreadable; the warning "grid charging without manual
+  switch" comes back if it goes missing again.
+- Peak shaving dialog: switching from Marstek to BYD while peak shaving runs
+  works in one step.
+
 ## 0.317.0-lm3
 
 - Peak shaving: new **battery type Marstek (Omnibattery)** (Lastmanagement-
