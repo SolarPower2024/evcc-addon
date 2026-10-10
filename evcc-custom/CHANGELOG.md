@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.317.0-lm2
+
+- Energy page overview: night values (grid import, battery discharge) and
+  values from before a newly added PV meter are shown again (fix from evcc
+  0.317.1, taken in early). Nothing to do.
+
 ## 0.317.0-lm1
 
 - Based on evcc 0.317.0 (see the evcc release notes). Phase switching with
