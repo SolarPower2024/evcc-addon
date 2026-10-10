@@ -142,10 +142,14 @@ device that stores each write is spared, and a value changed in Home Assistant
 (by hand, an automation or a restart) is still corrected in the next cycle.
 **Schreib-Toleranz** (Lastmanagement-Details → Peak Shaving, default 0 W =
 every change) skips smaller changes; stop (min) and maximum are always
-written. It applies to the grid charge power entity too. While peak shaving is
-off, the free value is written once and then nothing more. An entity removed
-or replaced gets the free value, a removed grid charge power entity 0 W, so
-neither stays on its last setpoint.
+written. It applies to the grid charge power entity too. evcc hands the battery
+back (free value) only after it held it back itself: when peak shaving is
+switched off, the free value is written once and then nothing more; an entity
+evcc never controlled is not touched, also not after a restart. An entity
+removed or replaced while evcc held it gets the free value, a removed grid
+charge power entity 0 W, so neither stays on its last setpoint. A write the
+entity rejects is logged once as an error (with Home Assistant's answer), then
+quietly retried until it lands.
 
 The target entity is set under **Lastmanagement-Details → Peak Shaving**, just
 the entity id, for example `input_number.battery_peak_power`. Running as this
@@ -159,6 +163,31 @@ the battery covers any demand by ordinary self-consumption, and grid charging
 pauses until the values are back. Both show in the log.
 
 Everything is written in watts; only the limit is shown in kW.
+
+### Battery type Marstek (Omnibattery)
+
+Lastmanagement-Details → Peak Shaving → **Batterietyp** (default BYD = the
+behaviour above). Omnibattery regulates a Marstek itself and only takes a
+setpoint under manual control. With **Marstek (Omnibattery)** also enter the
+battery's manual control switch (e.g. `switch.marstek_venus_battery_manual_mode`)
+and the force mode select (e.g. `select.marstek_venus_1_betriebsmodus_erzwingen`,
+options `None`, `Charge`, `Discharge`); for grid charging the charge power
+entity under Batterie-Netzladen. evcc then switches to manual only while it
+controls:
+
+| Situation | Switch | Mode | Power |
+| --- | --- | --- | --- |
+| grid charging | on | `Charge` | charge power |
+| below the reserve, a peak | on | `Discharge` | discharge power = setpoint |
+| below the reserve, no peak | on | `None` | – |
+| otherwise | off | unchanged | – |
+
+Switch, mode and power are written in this order and only when Home Assistant
+shows something else; a change by hand is corrected while evcc controls. The
+free value is never written. Home Assistant scripts for the evcc battery modes
+must no longer switch the manual control, the mode or the charge power. On the
+battery page the soc selects of soc grid charging and the reserve offer 15 %
+down to 11 % in 1 % steps for this type (a Marstek stops at 11 %).
 
 ### The 15 minute window
 

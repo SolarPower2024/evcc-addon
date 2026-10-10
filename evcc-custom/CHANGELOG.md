@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.317.0-lm3
+
+- Peak shaving: new **battery type Marstek (Omnibattery)** (Lastmanagement-
+  Details → Peak Shaving → Batterietyp). evcc switches Omnibattery to manual
+  control only while it grid-charges or holds the peak reserve, forces the mode
+  (Charge / Discharge / None) and only then writes the power; otherwise
+  Omnibattery regulates by itself. To do for a Marstek: choose the type, enter
+  the manual control switch and the force mode select, and remove the manual
+  mode, force mode and charge power steps from the Home Assistant scripts of
+  the evcc battery modes. BYD (default) works as before.
+- Peak shaving: evcc only hands back (free value) what it held back itself; an
+  entity it never controlled is no longer written at start or while peak
+  shaving is off. A rejected write is logged once instead of every cycle, with
+  Home Assistant's answer.
+- Battery page, battery type Marstek: soc grid charging and the reserve can be
+  set from 15 % down to 11 % in 1 % steps.
+
 ## 0.317.0-lm2
 
 - Energy page overview: night values (grid import, battery discharge) and
