@@ -361,6 +361,14 @@ optimizer plans soc-based battery grid charging from the start to the stop soc
 (3 h): it plans the charging time at the grid charge power, at most this;
 with peak shaving as long as the room below the limit takes.
 
+**Grenze = Peak-Shaving-Grenze** (next to the Stromkreis Lastmanagement, default
+off): the load management circuit takes the peak limit from the battery tab
+(with follow the peak) as its power limit. The value stored in the circuit stays
+as fallback without peak shaving or peak limit; "Lastmanagement aus" lifts it as
+before. Overview, circuit tile and circuit dialog show the limit in effect and
+where it comes from. Note: a three-phase wallbox needs about 4.1 kW at 6 A; below
+that it charges on one phase or with the battery down to the reserve.
+
 ### Consumption forecast and battery identification
 
 Under **Erweitert**, **Verbrauchsprognose** chooses how the optimizer forecasts
@@ -414,6 +422,12 @@ Vorhersage hinzufügen → Planer-Vorhersage → fixed price) of at least 1.25 �
 the feed-in price, e.g. 12 ct: the optimizer plans with it, statistics and
 costs keep the grid tariff. Note that the planner tariff also drives vehicle
 charge plans, so do not use a fixed one together with a dynamic grid tariff.
+
+**Automatic mode:** evcc's optimizer settings now offer an automatic mode
+(battery only, or battery and loadpoints). Leave it **off** for now: the fork's
+gate for it (grid charging through load management and peak shaving) is not
+released yet, and with it on the fork's own grid charging and the circuit
+check for the optimizer's charging do not apply.
 
 ## 11. Heater in stages
 

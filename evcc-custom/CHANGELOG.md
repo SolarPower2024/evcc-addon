@@ -1,5 +1,38 @@
 # Changelog
 
+## 0.317.1-lm1
+
+- evcc base: evcc 0.317.1 plus evcc's development state of 12 October (phase
+  switching ends 3p minimum charging sooner when 1p is not sustainable,
+  fractional minimum current on circuits, Marstek charges in hold mode, grid
+  discharge only offered for batteries that support it, optimizer fixes).
+  evcc's new optimizer **automatic mode: leave it off** for now (see DOCS).
+- New: Lastmanagement-Details → Erweitert → **Grenze = Peak-Shaving-Grenze**
+  (default off): the load management circuit takes the peak limit from the
+  battery tab as its power limit.
+- Fixed: evcc starts again when a loadpoint's min or max current was set
+  below or above its 1p values (restart loop after an update).
+- Load management: an overload in a sub-circuit is reduced right away; a full
+  loadpoint with high priority no longer makes lower loads cycle; a higher
+  priority wallbox starts with what can be freed.
+- Peak shaving: a short 0 or jump back of the energy counter (e.g. on a Home
+  Assistant restart) no longer spoils the 15 minute window, the monthly peak
+  or follow the peak. A frozen or unavailable grid power and an unreadable
+  battery power count as meter failure: the battery is released instead of
+  draining the reserve.
+- Peak shaving: the battery is handed back to Home Assistant when evcc stops
+  (update, restart); unavailable entities (e.g. while Home Assistant starts)
+  no longer count as released; a hanging Home Assistant delays control by one
+  timeout at most. The add-on now waits up to 30 s for this on stop.
+- Grid charging starts only once the battery SoC was read; a one-time charge
+  whose target time is more than 2 h past ends; controlled grid charging keeps
+  to the budget left in the running 15 minute window.
+- Heater in stages: keeps switching off with an unreachable Shelly, does not
+  catch up a failed switch-on by itself, no longer flutters at a stage limit
+  in PV mode, keeps its stages on a restart; circuits count the real current
+  per phase.
+- Omnibattery: the log explains the limit written.
+
 ## 0.317.0-lm4
 
 - Peak shaving with a Marstek (Omnibattery): evcc now drives Omnibattery's own
