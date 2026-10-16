@@ -1,5 +1,19 @@
 # Changelog
 
+## 2026.10.16
+
+Official optimizer image, build of 2026-10-16:
+
+- Faster solving: a hybrid solver combines CBC and HiGHS, and the allowed cost
+  gap now scales with the size of the request (two cents by default).
+- Requests with contradictory battery limits are answered with a clear error
+  naming the field; an empty horizon is rejected instead of failing inside the
+  model.
+- Requests the solver cannot answer are logged for analysis.
+- New optional endpoints for plain-language plan explanations; they are off
+  unless configured and evcc custom does not use them.
+- Nothing to do for you.
+
 ## 2026.10.4
 
 Official optimizer image, build of 2026-10-04 (newest published). The previous

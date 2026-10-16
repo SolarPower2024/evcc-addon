@@ -2,6 +2,6 @@
 # version of the evcc custom addon. Multi-arch: Home Assistant pulls the arm64
 # variant on a Raspberry Pi. Bump the tag together with `version` in
 # config.yaml, see DOCS.md.
-FROM docker.io/evcc/optimizer:aec9bdc71f061f7a9613c7a70769764be92855d0
+FROM docker.io/evcc/optimizer:ce03ab5584662edb316da1deb3cbe4f7145d91e4
 
 LABEL io.hass.type="addon"
