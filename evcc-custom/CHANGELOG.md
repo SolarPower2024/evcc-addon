@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.317.1-lm2
+
+- evcc base: evcc 0.317.1 plus evcc's development state of 16 October (44
+  further changes: optimizer plan explanation, welcome charge across charging
+  strategies, hourly optimizer slots beyond 48 h also for the self-hosted
+  optimizer, circuits power view, new devices, translations). Nothing to do.
+- Battery page: one-time grid charging is started and stopped with a switch in
+  front of the sentence; the peak shaving card no longer names the circuit.
+
 ## 0.317.1-lm1
 
 - evcc base: evcc 0.317.1 plus evcc's development state of 12 October (phase
