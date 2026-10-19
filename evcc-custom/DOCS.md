@@ -77,7 +77,7 @@ Under **Batterie-Netzladen** you choose how the battery charges from the grid:
 A battery driven through Home Assistant mode scripts can only be switched on or
 off, so the **full expected charge power** (Batterie-Netzladen) has to fit into
 the budget, against the circuit's power and its current limit (the current spread
-over the battery phases, Erweitert, default 3). Set it to the power the battery realistically draws, not its
+over the battery phases, Erweitert, default 3; with a current limit on the battery's circuit or one above it the phases must be set, otherwise grid charging stays off and the field is shown in red). Set it to the power the battery realistically draws, not its
 nameplate maximum, otherwise grid charging blocks itself unnecessarily. Empty
 falls back to the sum of the battery meters' maximum charge power; with neither,
 grid charging on a circuit stays off.
@@ -112,7 +112,7 @@ values are picked in the sentence, the soc and **sofort** (right away) or
 **bis HH:MM** (half-hour steps) at the cheapest time before it (from the planner
 tariff; right away when the time has passed or the duration is unknown). It
 switches itself off at the target soc, continues across restarts and has a
-cancel button. It ends by itself if the battery is removed. The same checks as soc-based grid charging apply (peak,
+cancel button. The last chosen soc is kept as the preset for the next start. It ends by itself if the battery is removed. The same checks as soc-based grid charging apply (peak,
 circuit, charge power).
 
 ```
@@ -545,6 +545,13 @@ expects, through Home Assistant. Off by default.
   incomplete. To be safe, also download a backup in evcc (**Configuration →
   System → Backup → Download backup**).
 - To restore: stop the addon, restore the backup, start the addon.
+
+## Login
+
+The fork's settings (limits, entities, circuits, profiles, log file) need the
+evcc login like evcc's own configuration. Switches, one-time charging and soc
+thresholds work without it. Home Assistant automations that change these
+settings through the API need evcc's API key.
 
 ## Requirements
 

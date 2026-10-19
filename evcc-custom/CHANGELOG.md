@@ -1,5 +1,28 @@
 # Changelog
 
+## 0.317.1-lm3
+
+- Security: the fork's settings (limits, entities, circuits, profiles, log file)
+  now need the evcc login like the rest of the configuration. Operating
+  (switches, one-time charging, soc thresholds) stays open. Calls from outside
+  (e.g. Home Assistant automations) to these settings need the API key.
+- Circuits: a deleted circuit no longer lifts limits; the battery on a deleted
+  circuit does not grid charge until the assignment is removed. With a current
+  limit (A) on the battery's circuit the **battery phases** (Lastmanagement-Details
+  → Erweitert) must be set, otherwise no grid charging (shown in red).
+- Stored settings that are unreadable or out of range are reported once and
+  fall back to their default; old keys are cleaned up at start. Your current
+  values stay as they are.
+- Optimizer: respects the current limits of circuits and plans several home
+  batteries by their capacity.
+- One-time charging keeps the last chosen soc as preset.
+- Clearer error messages instead of switches jumping back silently; a warning
+  dot on the Mehr button while load management is off.
+- No green update dot in evcc any more; updates come with this add-on.
+- Fewer repeated log lines; the Home Assistant forecast copes better with
+  outages. Stored EEG prices can be deleted and set again through the API.
+- Nothing to do for you.
+
 ## 0.317.1-lm2
 
 - evcc base: evcc 0.317.1 plus evcc's development state of 16 October (44
