@@ -534,11 +534,38 @@ expects, through Home Assistant. Off by default.
 - Keep the sensor out of the recorder:
   `recorder: exclude: entities: [sensor.evcc_einspeiseprognose]`.
 
+## Backup
+
+- Home Assistant only backs up the config folder of this addon (it holds
+  `evcc.db`) if **evcc custom** is selected in the automatic backup under the
+  apps.
+- Keep **Create backup** ticked before every update.
+- The backup runs while evcc is running. The database uses WAL mode (`evcc.db`
+  next to `evcc.db-wal`), so a copy taken during operation can in rare cases be
+  incomplete. To be safe, also download a backup in evcc (**Configuration →
+  System → Backup → Download backup**).
+- To restore: stop the addon, restore the backup, start the addon.
+
 ## Requirements
 
 The battery needs `modeNormal` and `modeCharge` scripts configured on the Home
 Assistant battery meter, otherwise evcc cannot control it at all and the grid
 charging features stay hidden.
+
+## Back to the official evcc
+
+1. Stop this addon.
+2. Start the official addon with **its own old database**. It stays unchanged
+   in the config folder of the official addon as long as you do not delete that
+   addon (state before the switch).
+3. Do not copy the database of this addon into the official one: the loadpoint
+   stores keys (for example `minCurrent1p`, `maxCurrent1p` and the delays) that
+   the official evcc does not know, so it may not start that loadpoint and
+   reports a configuration error. Clearing the fields here does not remove the
+   keys.
+4. Devices and settings made after the switch have to be entered again there.
+   Sessions and peak values stay in the database of this addon.
+5. Back up both databases before every switch.
 
 ## Running alongside the official addon
 
