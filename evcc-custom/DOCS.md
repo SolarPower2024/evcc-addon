@@ -534,6 +534,18 @@ expects, through Home Assistant. Off by default.
 - Keep the sensor out of the recorder:
   `recorder: exclude: entities: [sensor.evcc_einspeiseprognose]`.
 
+## Backup
+
+- Home Assistant only backs up the config folder of this addon (it holds
+  `evcc.db`) if **evcc custom** is selected in the automatic backup under the
+  apps.
+- Keep **Create backup** ticked before every update.
+- The backup runs while evcc is running. The database uses WAL mode (`evcc.db`
+  next to `evcc.db-wal`), so a copy taken during operation can in rare cases be
+  incomplete. To be safe, also download a backup in evcc (**Configuration →
+  System → Backup → Download backup**).
+- To restore: stop the addon, restore the backup, start the addon.
+
 ## Requirements
 
 The battery needs `modeNormal` and `modeCharge` scripts configured on the Home
