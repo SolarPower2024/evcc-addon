@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026.10.18
+
+Official optimizer image, build of 2026-10-18:
+
+- Internal solver cleanup and updated dependencies (Python 3.14 base image); results are identical to the previous build on our test plans.
+- The optional plain-language plan explanations were reworked; they stay off unless configured and evcc custom does not use them.
+- Nothing to do for you.
+
 ## 2026.10.16
 
 Official optimizer image, build of 2026-10-16:
