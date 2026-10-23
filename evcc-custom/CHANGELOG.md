@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.317.2-lm1
+
+- Based on evcc 0.317.2 (smart meter gateway keeps its device serial; small fixes).
+- Nothing to do for you.
+
 ## 0.317.1-lm3
 
 - Security: the fork's settings (limits, entities, circuits, profiles, log file)
