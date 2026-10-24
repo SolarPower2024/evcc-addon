@@ -14,6 +14,10 @@ Then install **evcc custom** from the store, and optionally **evcc optimizer** t
 run the optimizer locally instead of the cloud service (see
 [evcc-optimizer/DOCS.md](evcc-optimizer/DOCS.md)).
 
+**PR35251 Test** runs the official test image of evcc PR 35251 with its own
+database, only for testing; stop evcc custom while it runs (see
+[evcc-pr35251-test/DOCS.md](evcc-pr35251-test/DOCS.md)).
+
 ## What is different from the official addon
 
 Additions for load management (priorities, battery, switch devices, heater in
