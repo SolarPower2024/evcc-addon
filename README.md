@@ -21,7 +21,7 @@ database, only for testing; stop evcc custom while it runs (see
 **evcc Peak Fronius** is a Home Assistant integration, not an add-on: peak shaving
 for a Fronius GEN24 battery (e.g. BYD) through fronius_modbus, with evcc custom
 setting the values. Install it with HACS → ⋮ → Custom repositories → this URL,
-category *Integration* (see [evcc-peak-fronius/README.md](evcc-peak-fronius/README.md)).
+category *Integration* (see [custom_components/evcc_peak_fronius/README.md](custom_components/evcc_peak_fronius/README.md)).
 
 ## What is different from the official addon
 

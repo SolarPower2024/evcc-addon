@@ -4,12 +4,10 @@ on:
   push:
     paths:
       - "custom_components/**"
-      - "evcc-peak-fronius/**"
       - ".github/workflows/integration-tests.yml"
   pull_request:
     paths:
       - "custom_components/**"
-      - "evcc-peak-fronius/**"
       - ".github/workflows/integration-tests.yml"
 
 permissions:
@@ -19,10 +17,6 @@ jobs:
   pytest:
     name: evcc Peak Fronius
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: evcc-peak-fronius
-
     steps:
       - uses: actions/checkout@v4
         with:
@@ -32,8 +26,9 @@ jobs:
         with:
           python-version: "3.13"
 
-      - run: pip install -r requirements-test.txt ruff
+      - run: pip install -r custom_components/evcc_peak_fronius/requirements-test.txt ruff
 
-      - run: ruff check . ../custom_components
+      - run: ruff check --config custom_components/evcc_peak_fronius/pyproject.toml custom_components
 
-      - run: pytest -q -p no:cacheprovider
+      # from the repository root: inside the folder select.py would shadow the standard library
+      - run: pytest -q -p no:cacheprovider -c custom_components/evcc_peak_fronius/pyproject.toml
