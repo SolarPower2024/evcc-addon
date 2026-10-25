@@ -128,67 +128,77 @@ holding the battery's lower soc range back as a reserve.
 Configure it on the **Hausbatterie** page: a switch, the peak limit (2–20 kW in
 0.5 kW steps) and the reserve soc.
 
-| Battery soc | Behaviour | Value written to the entity |
-| --- | --- | --- |
-| above the reserve | ordinary self-consumption | `10000` (discharge freely) |
-| below the reserve | peaks only | `max(0, demand − allowed)` in W, see below |
-| charging from the grid | no discharging | `0` |
+evcc does not regulate the battery itself. The regulation runs in Home
+Assistant, within seconds, and evcc sets its values: **Lastmanagement-Details →
+Peak Shaving → Peak-Regelung in Home Assistant**, one section for both battery
+types:
 
-evcc only computes the setpoint. The Home Assistant automation reading the
-entity does the actual discharging.
+- **Batterietyp**: *BYD (evcc Peak Fronius)* or *Marstek (Omnibattery)*. The type
+  only sets the limits of the device and the placeholders.
+- **Peak-Shaving-Schalter**, **Peak-Shaving-Limit**, **SoC-Schwelle**: the
+  switch, the allowed grid power and the reserve of the regulation in Home
+  Assistant. evcc writes the switch on while peak shaving runs, the grid power
+  allowed in the running 15 minute window as limit and the reserve as threshold.
+  Without the three entities peak shaving cannot be switched on.
 
-Every cycle evcc reads the entity and only writes when the value differs, so a
-device that stores each write is spared, and a value changed in Home Assistant
-(by hand, an automation or a restart) is still corrected in the next cycle.
-**Schreib-Toleranz** (Lastmanagement-Details → Peak Shaving, default 0 W =
-every change) skips smaller changes; stop (min) and maximum are always
-written. It applies to the grid charge power entity too. evcc hands the battery
-back (free value) only after it held it back itself: when peak shaving is
-switched off, the free value is written once and then nothing more; an entity
-evcc never controlled is not touched, also not after a restart. An entity
-removed or replaced while evcc held it gets the free value, a removed grid
-charge power entity 0 W, so neither stays on its last setpoint. A write the
-entity rejects is logged once as an error (with Home Assistant's answer), then
-quietly retried until it lands.
+| Battery soc | What the regulation in Home Assistant does |
+| --- | --- |
+| above the reserve | ordinary self-consumption |
+| below the reserve | only covers what exceeds the limit, keeps charging from pv |
 
-The target entity is set under **Lastmanagement-Details → Peak Shaving**, just
-the entity id, for example `input_number.battery_peak_power`. Running as this
-add-on, evcc reaches Home Assistant through the supervisor, so no url and no
-token are needed. Every value is fitted to the entity's min, max and step (the
-setpoint rounded up so the peak stays covered); a free value above max becomes
-max.
+Values are written only when Home Assistant shows something else; peak shaving
+off, a type change or a removed entity switches the regulation off, but only if
+evcc switched it on. Stopping evcc hands back as well.
 
-If evcc gets no meter values for over 2 minutes, it writes the free value, so
-the battery covers any demand by ordinary self-consumption, and grid charging
-pauses until the values are back. Both show in the log.
+### BYD with Fronius (integration evcc Peak Fronius)
 
-Everything is written in watts; only the limit is shown in kW.
+Needs the Home Assistant integration **evcc Peak Fronius** (HACS → ⋮ → Custom
+repositories → `https://github.com/SolarPower2024/evcc-addon`, category
+*Integration*) on top of fronius_modbus. It sets the storage control mode, the
+discharge limit and the grid charge power of the inverter; Fronius keeps
+regulating self-consumption. Enter its entities: `switch.evcc_peak_fronius_peak_shaving`,
+`number.evcc_peak_fronius_limit`, `number.evcc_peak_fronius_soc_threshold`, and
+under Batterie → Netzladen `number.evcc_peak_fronius_grid_charge_power` as
+grid charge power.
 
-### Battery type Marstek (Omnibattery)
+- The limit is also evcc's sign of life: evcc writes it every cycle (at least
+  100 W), also without peak shaving. Without it for more than 2 minutes into a
+  quarter hour, and when evcc stops, the integration gives the battery free.
+- The battery modes stay evcc's: the Home Assistant scripts of the evcc battery
+  modes set `select.evcc_peak_fronius_request` (normal → `normal`, hold →
+  `hold`, grid charging → `grid_charge`) and no longer switch the Fronius
+  storage mode themselves. A hold with peak shaving on still covers peaks.
+- The reserve band (hysteresis) is 2 %, as in the integration.
+- Before: evcc wrote a discharge setpoint into an entity (*Entladeregler*) and a
+  free value. That way is gone; at the first start evcc sets an entity it still
+  held back to the free value once, then forgets both. Peak shaving with the old
+  entity stays off until the new entities are set.
 
-Lastmanagement-Details → Peak Shaving → **Batterietyp** (default BYD = the
-behaviour above). With **Marstek (Omnibattery)** evcc does not set a
-discharge power but feeds Omnibattery's own peak shaving (Spitzenlastkappung),
-which regulates every second on its own meter. Enter its three entities:
-peak shaving switch (e.g. `switch.marstek_venus_system_spitzenlastkappung`),
-limit (`number.marstek_venus_system_spitzenlastkappung_limit`) and SOC
-threshold (`number.marstek_venus_system_spitzenlastkappung_soc_schwelle`);
-for grid charging also the manual control switch, the force mode select
-(options `None`, `Charge`, `Discharge`) and the charge power entity under
-Batterie-Netzladen.
+### Marstek (Omnibattery)
+
+Omnibattery's own peak shaving (Spitzenlastkappung) regulates every second on
+its own meter, e.g. `switch.marstek_venus_system_spitzenlastkappung`,
+`number.marstek_venus_system_spitzenlastkappung_limit` and
+`number.marstek_venus_system_spitzenlastkappung_soc_schwelle`. Below
+**Netzladen (nur Marstek)** the manual control switch and the force mode select
+(options `None`, `Charge`, `Discharge`) for grid charging, with the charge
+power entity under Batterie-Netzladen.
 
 | Situation | What evcc writes |
 | --- | --- |
-| peak shaving on | peak shaving on, limit = grid power allowed in the 15 minute window (whole watts), SOC threshold = reserve (at least 20 %) |
 | grid charging | manual on, `Charge`, charge power; afterwards charge power 0 and manual off |
-| peak shaving off, type changed or entity removed | peak shaving off, only if evcc switched it on |
 
-Below the reserve the battery keeps charging from PV and only covers peaks.
-There is no hysteresis for Marstek. Values are written only when Home Assistant
-shows something else. Home Assistant scripts for the evcc battery modes must
-no longer switch the manual control, the mode or the charge power. On the
-battery page the soc selects of soc grid charging offer 15 % down to 11 % in
-1 % steps for this type (a Marstek stops at 11 %); the reserve starts at 20 %.
+The SOC threshold is at least 20 %. There is no hysteresis for Marstek. Home
+Assistant scripts for the evcc battery modes must not switch the manual
+control, the mode or the charge power. On the battery page the soc selects of
+soc grid charging offer 15 % down to 11 % in 1 % steps for this type (a Marstek
+stops at 11 %); the reserve starts at 20 %.
+
+If evcc gets no meter values for over 2 minutes, the limit becomes the peak
+limit without the window, and grid charging pauses until the values are back.
+Both show in the log. **Schreib-Toleranz** (Lastmanagement-Details → Peak
+Shaving, default 0 W = every change) skips smaller changes of the grid charge
+power. Everything is written in watts; only the limit is shown in kW.
 
 ### The 15 minute window
 
@@ -234,7 +244,7 @@ in the fork pins this down.
 ### Interaction with the other features
 
 While the reserve is being held, evcc keeps the battery in **normal** mode so
-your automation can discharge it. Grid charging (soc or price based) still works
+the regulation in Home Assistant can discharge it for peaks. Grid charging (soc or price based) still works
 below the reserve, with two rules:
 
 - A demand peak, meaning consumption **without** the battery above the peak
@@ -350,8 +360,7 @@ Under **Lastmanagement-Details → Erweitert**, in four collapsed groups
 (Lastmanagement, Peak Shaving, Batterie-Netzladen, Optimizer): the **Stromkreis Lastmanagement
 (Peak)**, i.e. the circuit holding your peak limit beside a circuit for the fuse
 (only it is shown in the overview, lifted by the switch and raised by follow the
-peak; none = all circuits), the peak shaving reserve hysteresis (default 2 %),
-free value written while the battery may discharge freely (10000 W), grid
+peak; none = all circuits), grid
 charge hold-off after a peak or the circuit stopped it (5 min), reservation
 expiry for waiting higher priority loads (10 min), the battery's phases for
 current limits (3), the minute from which the peak shaving budget stops
@@ -423,11 +432,18 @@ the feed-in price, e.g. 12 ct: the optimizer plans with it, statistics and
 costs keep the grid tariff. Note that the planner tariff also drives vehicle
 charge plans, so do not use a fixed one together with a dynamic grid tariff.
 
-**Automatic mode:** evcc's optimizer settings now offer an automatic mode
-(battery only, or battery and loadpoints). Leave it **off** for now: the fork's
-gate for it (grid charging through load management and peak shaving) is not
-released yet, and with it on the fork's own grid charging and the circuit
-check for the optimizer's charging do not apply.
+**Automatic mode:** evcc's optimizer settings offer an automatic mode (battery
+only, or battery and loadpoints); it now works together with the fork. The
+optimizer decides the battery mode, the peak limit and the circuits stay hard
+limits: its grid charging passes the same gate as the fork's own (circuit,
+peak, charge power) and becomes hold when refused; a hold gives way to normal
+while a peak has to be covered. Soc grid charging is a target for it (start =
+lower bound, stop = goal), price based grid charging is the optimizer's. A
+profile's discharge lock is skipped in automatic mode. Without an optimizer
+result for 30 minutes the fork charges by itself again. Heaters and switch
+devices are never steered by the optimizer; load management still sheds them.
+With peak shaving on, a hold raises the soc threshold of the regulation in Home
+Assistant to 100 %, so the battery only covers peaks. Off by default.
 
 ## 11. Heater in stages
 

@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.318.1-lm1
+
+- Based on evcc 0.318.1 (includes 0.318.0).
+- Optimizer automatic mode now works together with load management, peak
+  shaving and soc grid charging: the peak limit and circuits stay hard limits,
+  its grid charging passes the same checks as the fork's. Still off until you
+  switch it on.
+- Peak shaving: one section **Peak-Regelung in Home Assistant** (Lastmanagement-Details
+  → Peak Shaving) for both battery types. BYD now runs through the new Home
+  Assistant integration **evcc Peak Fronius** (in this repository, install with
+  HACS); evcc no longer writes a discharge setpoint, the settings Entladeregler,
+  free value and reserve hysteresis are gone. BYD users: install the
+  integration and enter its entities, otherwise peak shaving stays off.
+- Snow: "automatisch" no longer takes over snow set by hand.
+- New add-on logo.
+- Marstek: nothing to do for you.
+
 ## 0.317.2-lm1
 
 - Based on evcc 0.317.2 (smart meter gateway keeps its device serial; small fixes).
