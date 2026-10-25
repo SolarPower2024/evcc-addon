@@ -4,7 +4,7 @@
   "after_dependencies": ["fronius_modbus"],
   "codeowners": [],
   "config_flow": true,
-  "documentation": "https://github.com/SolarPower2024/evcc-addon/tree/main/evcc-peak-fronius",
+  "documentation": "https://github.com/SolarPower2024/evcc-addon/tree/main/custom_components/evcc_peak_fronius",
   "integration_type": "service",
   "iot_class": "calculated",
   "issue_tracker": "https://github.com/SolarPower2024/evcc-addon/issues",

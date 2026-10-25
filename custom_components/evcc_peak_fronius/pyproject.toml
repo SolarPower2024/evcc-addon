@@ -1,0 +1,27 @@
+# run from the repository root:
+#   pytest -c custom_components/evcc_peak_fronius/pyproject.toml
+# (from inside this folder select.py would shadow the standard library)
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["../.."]  # the repository root, for custom_components.evcc_peak_fronius
+asyncio_mode = "auto"
+addopts = "-p pytest_homeassistant_custom_component --cov=custom_components.evcc_peak_fronius --cov-config=custom_components/evcc_peak_fronius/pyproject.toml --cov-report=term-missing"
+
+[tool.coverage.run]
+omit = ["*/tests/*"]
+
+[tool.ruff]
+src = ["../.."]  # custom_components/ lives at the repository root
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["A", "B", "C4", "D", "E", "F", "I", "N", "PL", "RUF", "SIM", "UP", "W"]
+ignore = ["D203", "D213", "PLR0913", "PLR0911"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["custom_components"]
+
+[tool.ruff.lint.per-file-ignores]
+"select.py" = ["A005"]  # the platform module of Home Assistant has to be named so
+"**/tests/*" = ["PLR2004", "PLR0917", "D102", "D103", "D104", "D205"]

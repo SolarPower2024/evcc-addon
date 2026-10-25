@@ -33,7 +33,8 @@ else:
         DOMAIN,
     )
 
-    pytest_plugins = "pytest_homeassistant_custom_component"
+    # the plugin is loaded with -p in pyproject.toml: pytest takes pytest_plugins
+    # only from a conftest in the root directory
 
     MODE_OPTIONS = [
         "Auto",

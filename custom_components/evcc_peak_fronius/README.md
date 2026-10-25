@@ -94,11 +94,12 @@ Home Assistant wieder läuft.
 
 ## Tests
 
-Im Ordner `evcc-peak-fronius/`:
+Im Wurzelordner des Repositorys (im Ordner der Integration selbst würde `select.py`
+das gleichnamige Python-Modul verdecken):
 
 ```bash
-pip install -r requirements-test.txt
-pytest
+pip install -r custom_components/evcc_peak_fronius/requirements-test.txt
+pytest -c custom_components/evcc_peak_fronius/pyproject.toml
 ```
 
 `tests/test_regelung.py` prüft die Regeln ohne Home Assistant,
