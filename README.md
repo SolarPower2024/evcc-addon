@@ -18,6 +18,11 @@ run the optimizer locally instead of the cloud service (see
 database, only for testing; stop evcc custom while it runs (see
 [evcc-pr35251-test/DOCS.md](evcc-pr35251-test/DOCS.md)).
 
+**evcc Peak Fronius** is a Home Assistant integration, not an add-on: peak shaving
+for a Fronius GEN24 battery (e.g. BYD) through fronius_modbus, with evcc custom
+setting the values. Install it with HACS → ⋮ → Custom repositories → this URL,
+category *Integration* (see [evcc-peak-fronius/README.md](evcc-peak-fronius/README.md)).
+
 ## What is different from the official addon
 
 Additions for load management (priorities, battery, switch devices, heater in
