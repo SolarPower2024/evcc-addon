@@ -1,0 +1,39 @@
+name: Integration tests
+
+on:
+  push:
+    paths:
+      - "custom_components/**"
+      - "evcc-peak-fronius/**"
+      - ".github/workflows/integration-tests.yml"
+  pull_request:
+    paths:
+      - "custom_components/**"
+      - "evcc-peak-fronius/**"
+      - ".github/workflows/integration-tests.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  pytest:
+    name: evcc Peak Fronius
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: evcc-peak-fronius
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - run: pip install -r requirements-test.txt ruff
+
+      - run: ruff check . ../custom_components
+
+      - run: pytest -q -p no:cacheprovider

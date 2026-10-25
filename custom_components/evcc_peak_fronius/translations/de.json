@@ -1,0 +1,105 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "evcc Peak Fronius",
+        "description": "Entitäten von fronius_modbus auswählen. evcc gibt die Werte vor, diese Integration regelt die Batterie.",
+        "data": {
+          "grid_power": "Netzleistung",
+          "grid_invert": "Netzleistung umkehren",
+          "battery_power": "Batterie-Entladeleistung",
+          "battery_invert": "Batterieleistung umkehren",
+          "battery_charge_power": "Batterie-Ladeleistung",
+          "soc": "Batterie-SoC",
+          "mode": "Speichermodus",
+          "discharge_limit": "Entladegrenze",
+          "grid_charge": "Netzladeleistung",
+          "reset_button": "Modbus-API-Steuerung zurücksetzen"
+        },
+        "data_description": {
+          "grid_power": "Bezug positiv. Sonst Umkehren einschalten.",
+          "battery_power": "Entladen positiv (fronius_modbus: Speicher-Entladeleistung). Nur ein Sensor mit Vorzeichen: bei Bedarf Umkehren.",
+          "battery_charge_power": "Optional, fronius_modbus: Speicher-Ladeleistung. Wird von der Entladeleistung abgezogen.",
+          "reset_button": "Optional. Wird gedrückt, wenn der Modus nach 3 Versuchen nicht wechselt."
+        }
+      }
+    },
+    "error": {
+      "mode_options": "Dieser Auswahl fehlt Auto, Discharge Limit, Charge from Grid oder Block Discharging."
+    },
+    "abort": {
+      "already_configured": "Dieser Wechselrichter ist schon eingerichtet."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "evcc Peak Fronius",
+        "data": {
+          "grid_power": "Netzleistung",
+          "grid_invert": "Netzleistung umkehren",
+          "battery_power": "Batterie-Entladeleistung",
+          "battery_invert": "Batterieleistung umkehren",
+          "battery_charge_power": "Batterie-Ladeleistung",
+          "soc": "Batterie-SoC",
+          "mode": "Speichermodus",
+          "discharge_limit": "Entladegrenze",
+          "grid_charge": "Netzladeleistung",
+          "reset_button": "Modbus-API-Steuerung zurücksetzen"
+        },
+        "data_description": {
+          "grid_power": "Bezug positiv. Sonst Umkehren einschalten.",
+          "battery_power": "Entladen positiv (fronius_modbus: Speicher-Entladeleistung). Nur ein Sensor mit Vorzeichen: bei Bedarf Umkehren.",
+          "battery_charge_power": "Optional, fronius_modbus: Speicher-Ladeleistung. Wird von der Entladeleistung abgezogen.",
+          "reset_button": "Optional. Wird gedrückt, wenn der Modus nach 3 Versuchen nicht wechselt."
+        }
+      }
+    },
+    "error": {
+      "mode_options": "Dieser Auswahl fehlt Auto, Discharge Limit, Charge from Grid oder Block Discharging."
+    }
+  },
+  "entity": {
+    "switch": {
+      "peak_shaving": {
+        "name": "Peak Shaving"
+      }
+    },
+    "number": {
+      "limit": {
+        "name": "Limit"
+      },
+      "soc_threshold": {
+        "name": "SoC-Schwelle"
+      },
+      "grid_charge_power": {
+        "name": "Netzladeleistung"
+      }
+    },
+    "select": {
+      "request": {
+        "name": "Anforderung",
+        "state": {
+          "normal": "Normal",
+          "grid_charge": "Netzladen",
+          "hold": "Entladesperre"
+        }
+      }
+    },
+    "sensor": {
+      "status": {
+        "name": "Status",
+        "state": {
+          "no_evcc": "Kein evcc",
+          "off": "Aus",
+          "free": "Frei",
+          "shaving": "Kappt",
+          "meter_outage": "Messausfall",
+          "no_soc": "Kein SoC",
+          "grid_charge": "Netzladen",
+          "hold": "Entladesperre"
+        }
+      }
+    }
+  }
+}

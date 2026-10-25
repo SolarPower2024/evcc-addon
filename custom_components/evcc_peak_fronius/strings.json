@@ -1,0 +1,97 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "evcc Peak Fronius",
+        "description": "Pick the entities of fronius_modbus. evcc sets the values, this integration controls the battery.",
+        "data": {
+          "grid_power": "Grid power",
+          "grid_invert": "Invert grid power",
+          "battery_power": "Battery discharge power",
+          "battery_invert": "Invert battery power",
+          "battery_charge_power": "Battery charge power",
+          "soc": "Battery soc",
+          "mode": "Storage control mode",
+          "discharge_limit": "Discharge limit",
+          "grid_charge": "Grid charge power",
+          "reset_button": "Reset Modbus API control"
+        },
+        "data_description": {
+          "grid_power": "Import positive. Otherwise switch on Invert.",
+          "battery_power": "Discharging positive (fronius_modbus: storage discharge power). A signed sensor alone: Invert if needed.",
+          "battery_charge_power": "Optional, fronius_modbus: storage charge power. Subtracted from the discharge power.",
+          "reset_button": "Optional. Pressed if the mode does not change after 3 attempts."
+        }
+      }
+    },
+    "error": {
+      "mode_options": "This select lacks Auto, Discharge Limit, Charge from Grid or Block Discharging."
+    },
+    "abort": {
+      "already_configured": "This inverter is already set up."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "evcc Peak Fronius",
+        "data": {
+          "grid_power": "Grid power",
+          "grid_invert": "Invert grid power",
+          "battery_power": "Battery discharge power",
+          "battery_invert": "Invert battery power",
+          "battery_charge_power": "Battery charge power",
+          "soc": "Battery soc",
+          "mode": "Storage control mode",
+          "discharge_limit": "Discharge limit",
+          "grid_charge": "Grid charge power",
+          "reset_button": "Reset Modbus API control"
+        },
+        "data_description": {
+          "grid_power": "Import positive. Otherwise switch on Invert.",
+          "battery_power": "Discharging positive (fronius_modbus: storage discharge power). A signed sensor alone: Invert if needed.",
+          "battery_charge_power": "Optional, fronius_modbus: storage charge power. Subtracted from the discharge power.",
+          "reset_button": "Optional. Pressed if the mode does not change after 3 attempts."
+        }
+      }
+    },
+    "error": {
+      "mode_options": "This select lacks Auto, Discharge Limit, Charge from Grid or Block Discharging."
+    }
+  },
+  "entity": {
+    "switch": {
+      "peak_shaving": { "name": "Peak shaving" }
+    },
+    "number": {
+      "limit": { "name": "Limit" },
+      "soc_threshold": { "name": "Soc threshold" },
+      "grid_charge_power": { "name": "Grid charge power" }
+    },
+    "select": {
+      "request": {
+        "name": "Request",
+        "state": {
+          "normal": "Normal",
+          "grid_charge": "Grid charging",
+          "hold": "Hold"
+        }
+      }
+    },
+    "sensor": {
+      "status": {
+        "name": "Status",
+        "state": {
+          "no_evcc": "No evcc",
+          "off": "Off",
+          "free": "Free",
+          "shaving": "Shaving",
+          "meter_outage": "Meter outage",
+          "no_soc": "No soc",
+          "grid_charge": "Grid charging",
+          "hold": "Hold"
+        }
+      }
+    }
+  }
+}
