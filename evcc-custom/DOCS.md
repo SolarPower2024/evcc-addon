@@ -222,11 +222,13 @@ for 5 minutes, then 7.5 kW are allowed for the remaining 10.
 
 The energy drawn comes from, in this order:
 
-1. the grid meter's import counter in evcc, when it has one
-2. a Home Assistant energy sensor, **Energiezähler Netzbezug** under
+1. the energy counter of the main circuit's own meter, when it has one (it sees
+   the whole import, the grid meter may leave out an energy community's part)
+2. the grid meter's import counter in evcc, when it has one
+3. a Home Assistant energy sensor, **Energiezähler Netzbezug** under
    Lastmanagement-Details → Peak Shaving: a total counter in kWh or Wh, not a
    daily value
-3. the grid power, which evcc only sees every 10 to 30 seconds
+4. the grid power, which evcc only sees every 10 to 30 seconds
 
 The dialog shows which one is in use. A counter that fails or stops updating is
 replaced by the grid power until the quarter hour ends, with a warning in the
@@ -285,6 +287,21 @@ cost when grid charging raised the peak) and the total. The saving only counts
 above the month's limit (the highest peak limit set by hand in the month, not
 the one raised by follow the peak): grid charging below it costs nothing extra.
 
+### Grid import limit for loads (Netzbezugsspitze, preview)
+
+Konfiguration → **Externe Begrenzung** → **Statische Limits**, needs **Einstellungen →
+Experimentell**; the setting shows with the country Austria or Belgium, or once a
+value is set. Off by default. It keeps loads on the main circuit below the higher
+of the value set here and the month's highest quarter hour so far, read from the
+main circuit's meter if it has an energy counter, else from the grid meter.
+
+- This is a preview of a function evcc has not finished; it may change or go away.
+- It only limits loads, the battery is not involved. It runs beside peak shaving:
+  with both set, the lower limit applies to loads.
+- **Schnell** on any charging point lifts it for the whole home, also without a car.
+- Best set at the start of a month: a higher peak earlier in the month is not known
+  when the main circuit's counter started recording later.
+
 ## 5. Second feed-in tariff (EEG)
 
 If part of the export goes to an energy community (EEG), add **Einspeisevergütung
@@ -295,10 +312,13 @@ standard feed-in is the total export of the grid meter minus EEG. Only
 counters are used, the grid power that drives pv control, load management and
 peak shaving is not touched, and self-consumption keeps being valued at the
 standard tariff. The energy page (tab **Energie**, shown with **Einstellungen →
-Experimentell**) splits the export in its grid card: EEG as its own lighter
-bar, both amounts in the legend, and the revenue of the standard feed-in and of
-EEG as separate tiles, also without a grid price. The data is also available
-via `GET /api/feedinsplit`.
+Experimentell**) shows the revenue of the standard feed-in and of EEG as separate
+tiles, also without a grid price; its grid chart shows feed-in as evcc does.
+
+The line **EEG-Bezug** in the same card sets the counter of what you draw from the
+energy community (kWh or Wh). It is for display only: a green bar in the grid
+chart. Optional, off without a counter. The data is also available via
+`GET /api/feedinsplit`.
 
 ## 6. Shed guard (Abwurfschutz)
 

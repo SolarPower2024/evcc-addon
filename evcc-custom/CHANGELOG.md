@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.318.2-lm1
+
+- Based on evcc 0.318.2 and evcc's development state of 2026-11-06, including
+  changes evcc has not released yet.
+- New, experimental and off by default: **Netzbezugsspitze** (Externe Begrenzung
+  → Statische Limits) keeps loads below the higher of a limit and the month's
+  highest quarter hour. This is a preview of a function evcc has not finished; it
+  may change or go away. Nothing to do unless you want to use it.
+- Peak shaving: uses the energy counter of the main circuit's own meter when it
+  has one, which sees the whole import even with an energy community.
+- Energy page: the grid chart shows feed-in as evcc does again. New optional EEG
+  import counter (EEG card → **EEG-Bezug**), shown as a green bar.
+- Load management priorities also apply to the §14a limit.
+- Nothing you have to do. The optimizer add-on does not need an update.
+
 ## 0.318.1-lm1
 
 - Based on evcc 0.318.1 (includes 0.318.0).
