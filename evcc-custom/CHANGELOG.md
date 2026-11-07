@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.318.2-lm3
+
+- Peak shaving: below the reserve the battery is now also held while a vehicle
+  fast charges, follows a plan or charges to its min soc, if **Entladesperre**
+  (battery discharge control) is on. Your battery mode scripts run as above the
+  reserve; peaks are still covered, the reserve is no longer drained into the car.
+  Nothing to do. Not with the optimizer in automatic mode.
+
 ## 0.318.2-lm2
 
 - Peak shaving has one limit now: the **Netzbezugsspitze** (Externe Begrenzung →

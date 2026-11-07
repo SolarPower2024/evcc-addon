@@ -149,6 +149,10 @@ types:
 | above the reserve | ordinary self-consumption |
 | below the reserve | only covers what exceeds the limit, keeps charging from pv |
 
+Below the reserve evcc keeps the battery in normal mode, except for a hold evcc
+decides itself (e.g. Entladesperre while a vehicle fast charges or follows a plan,
+without optimizer automatic): the hold script runs, peaks are still covered.
+
 Values are written only when Home Assistant shows something else; peak shaving
 off, a type change or a removed entity switches the regulation off, but only if
 evcc switched it on. Stopping evcc hands back as well.
