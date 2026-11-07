@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.318.2-lm2
+
+- Peak shaving has one limit now: the **Netzbezugsspitze** (Externe Begrenzung →
+  Statische Limits), which also limits the loads on the main circuit. The value on
+  the Hausbatterie page opens that dialog instead of a drop-down.
+- **Follow the Peak** and its buffer are gone: above the limit, the month's highest
+  quarter hour always counts as the limit, for the battery and for the loads.
+- On the first start an existing limit is taken over if no Netzbezugsspitze is set
+  and peak shaving is on. An existing Netzbezugsspitze stays: check the value on the
+  Hausbatterie page. Without a limit the battery holds no reserve, the page warns.
+
 ## 0.318.2-lm1
 
 - Based on evcc 0.318.2 and evcc's development state of 2026-11-06, including

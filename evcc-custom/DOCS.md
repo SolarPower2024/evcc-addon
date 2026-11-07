@@ -125,8 +125,11 @@ DELETE /api/batterygridchargeonce
 Caps the grid demand peak a demand charge (Leistungspreis) is billed on, by
 holding the battery's lower soc range back as a reserve.
 
-Configure it on the **Hausbatterie** page: a switch, the peak limit (2–20 kW in
-0.5 kW steps) and the reserve soc.
+Configure it on the **Hausbatterie** page: a switch and the reserve soc. The value
+of the peak limit there opens **Externe Begrenzung → Statische Limits →
+Netzbezugsspitze**, where it is set. It also limits the loads, see below. Without
+a limit the battery holds no reserve and the page says so; for the battery it is
+at least 2 kW.
 
 evcc does not regulate the battery itself. The regulation runs in Home
 Assistant, within seconds, and evcc sets its values: **Lastmanagement-Details →
@@ -260,20 +263,13 @@ costs charging time; emptying the battery costs a cycle and leaves nothing for
 the next peak. Giving the wallbox the lowest priority lets load management take
 the first bite when the circuit limit is reached.
 
-### Follow the peak
+### A peak above the limit
 
-Lastmanagement-Details → Peak Shaving → **Follow the Peak**. A capacity tariff
-bills the month's highest quarter hour. Once the month already has a peak above
-your limit, the limit rises to that peak minus the **buffer** (0–5 kW, default
-0.5 kW; peak 10 kW → limit 9.5 kW), never below your own limit. The battery page
-keeps showing your own limit; Mehr → Lastmanagement (Peak) notes the raised
-one in the peak tile. A new month, or
-switching it off, returns to your own limit.
-
-The **load management (peak) circuit** (see Erweitert), when chosen, rises
-along with the raised limit, never below its configured value, and is back at it
-with the next month. This replaces the former "Stromkreis-Grenze mitziehen"; a
-circuit chosen there is taken over.
+A capacity tariff bills the month's highest quarter hour. Once the month already
+has a peak above your limit, shaving below it saves nothing: the battery's limit
+is that peak (rounded down to 100 W), and a new month starts at your limit again.
+The Hausbatterie page and Mehr → Lastmanagement (Peak) show the raised limit and
+your own one.
 
 ### Capacity tariff (Leistungstarif)
 
@@ -285,19 +281,18 @@ least, and a minimum power. Prefilled with the Austrian draft for 2027
 month's capacity cost, the saving against the peak without the battery (extra
 cost when grid charging raised the peak) and the total. The saving only counts
 above the month's limit (the highest peak limit set by hand in the month, not
-the one raised by follow the peak): grid charging below it costs nothing extra.
+the one raised by the month's peak): grid charging below it costs nothing extra.
 
 ### Grid import limit for loads (Netzbezugsspitze, preview)
 
-Konfiguration → **Externe Begrenzung** → **Statische Limits**, needs **Einstellungen →
-Experimentell**; the setting shows with the country Austria or Belgium, or once a
-value is set. Off by default. It keeps loads on the main circuit below the higher
+Konfiguration → **Externe Begrenzung** → **Statische Limits**, opened from the value
+on the Hausbatterie page. Otherwise it needs **Einstellungen → Experimentell** and
+shows with the country Austria or Belgium, or once a value is set. It keeps loads on the main circuit below the higher
 of the value set here and the month's highest quarter hour so far, read from the
 main circuit's meter if it has an energy counter, else from the grid meter.
 
 - This is a preview of a function evcc has not finished; it may change or go away.
-- It only limits loads, the battery is not involved. It runs beside peak shaving:
-  with both set, the lower limit applies to loads.
+- It is also peak shaving's limit. The battery keeps covering peaks in **Schnell**.
 - **Schnell** on any charging point lifts it for the whole home, also without a car.
 - Best set at the start of a month: a higher peak earlier in the month is not known
   when the main circuit's counter started recording later.
@@ -334,7 +329,7 @@ Abwurfschutz**, the minutes and a tick per loadpoint.
 Shown once a circuit is configured. Tiles for the load management (peak)
 circuit, or every circuit when none is chosen (load and limit),
 peak shaving (15 minute average, allowed grid draw until the quarter hour ends,
-reserve and setpoint, a limit raised by follow the peak), the overall state
+reserve and setpoint, a limit raised by the month's peak), the overall state
 beside the switch; below every load on a circuit, including battery grid
 charging as "Batterie (Netzladen)", by priority (throttled and switched off from the bottom up), with its state and a
 lock while the shed guard holds it off, and the
@@ -344,8 +339,8 @@ blocked). The events are kept in memory and start empty after a restart.
 The switch **Lastmanagement** at the top turns load management off: the power
 limit of the load management (peak) circuit (without one chosen: of all
 circuits) no longer throttles wallboxes, heaters or grid charging; other
-circuits, e.g. the fuse, keep theirs. Fuses (current limits), §14a and battery
-peak shaving stay active. Your configuration is not changed; switching on
+circuits, e.g. the fuse, keep theirs. Fuses (current limits), §14a, the
+Netzbezugsspitze and battery peak shaving stay active. Your configuration is not changed; switching on
 restores the limits. The setting survives a restart.
 
 An exceeded power limit no longer pops up as a notification (top right), load
@@ -379,8 +374,7 @@ and the battery page shows which one failed.
 Under **Lastmanagement-Details → Erweitert**, in four collapsed groups
 (Lastmanagement, Peak Shaving, Batterie-Netzladen, Optimizer): the **Stromkreis Lastmanagement
 (Peak)**, i.e. the circuit holding your peak limit beside a circuit for the fuse
-(only it is shown in the overview, lifted by the switch and raised by follow the
-peak; none = all circuits), grid
+(only it is shown in the overview and lifted by the switch; none = all circuits), grid
 charge hold-off after a peak or the circuit stopped it (5 min), reservation
 expiry for waiting higher priority loads (10 min), the battery's phases for
 current limits (3), the minute from which the peak shaving budget stops
@@ -391,8 +385,8 @@ optimizer plans soc-based battery grid charging from the start to the stop soc
 with peak shaving as long as the room below the limit takes.
 
 **Grenze = Peak-Shaving-Grenze** (next to the Stromkreis Lastmanagement, default
-off): the load management circuit takes the peak limit from the battery tab
-(with follow the peak) as its power limit. The value stored in the circuit stays
+off): the load management circuit takes the peak limit, or the month's higher
+peak, as its power limit. The value stored in the circuit stays
 as fallback without peak shaving or peak limit; "Lastmanagement aus" lifts it as
 before. Overview, circuit tile and circuit dialog show the limit in effect and
 where it comes from. Note: a three-phase wallbox needs about 4.1 kW at 6 A; below
