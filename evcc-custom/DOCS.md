@@ -11,8 +11,8 @@ Batterie-Netzladen, Peak Shaving, Leistungstarif, Batterie-Vermessung, Profile,
 Erweitert) and on the
 **Hausbatterie** page (profile, switches, limits, soc values). **Mehr →
 Lastmanagement (Peak)** shows what
-load management is doing right now, **Mehr → Peak Shaving** the highest quarter
-hour of each month.
+load management is doing right now, **Mehr → Peak Shaving** what peak shaving
+does with the battery and why.
 
 ## 1. Load management priorities
 
@@ -267,6 +267,14 @@ costs charging time; emptying the battery costs a cycle and leaves nothing for
 the next peak. Giving the wallbox the lowest priority lets load management take
 the first bite when the circuit limit is reached.
 
+### Peak status (Mehr → Peak Shaving)
+
+Shown once peak shaving is set up, also while it is off. On top a tile with what
+happens now (free, saving for peaks, covering a peak, hold, grid charging or
+discharge, meter outage, storage not reachable, off), storage, grid and the
+running quarter hour; below the reason in one sentence, mode and storage
+connection, the quarter hour, the month's peak and the events of the last 7 days.
+
 ### A peak above the limit
 
 A capacity tariff bills the month's highest quarter hour. Once the month already
@@ -281,11 +289,9 @@ Lastmanagement-Details → **Leistungstarif**: price per kW and year up to a
 threshold, a higher price above it, the agreed power with the share billed at
 least, and a minimum power. Prefilled with the Austrian draft for 2027
 (33.82 €/kW/year up to 10 kW, double above, at least 20 % of the agreed power and
-2 kW; final amounts from December 2026). Mehr → Peak Shaving then shows each
-month's capacity cost, the saving against the peak without the battery (extra
-cost when grid charging raised the peak) and the total. The saving only counts
-above the month's limit (the highest peak limit set by hand in the month, not
-the one raised by the month's peak): grid charging below it costs nothing extra.
+2 kW; final amounts from December 2026). evcc keeps each
+month's capacity cost and the saving against the peak without the battery; they
+are not shown at the moment (Mehr → Peak Shaving shows the peak status instead).
 
 ### Grid import limit for loads (Netzbezugsspitze, preview)
 

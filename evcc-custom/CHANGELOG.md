@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.318.2-lm4
+
+- **Mehr → Peak Shaving** now shows what peak shaving does with the battery and
+  why (Marstek and BYD): a tile with the current situation, the quarter hour, the
+  month's peak and the events of the last 7 days. Nothing to do.
+- The monthly statistics with the capacity cost (Leistungspreis) are no longer
+  shown; evcc keeps recording them.
+
 ## 0.318.2-lm3
 
 - Peak shaving: below the reserve the battery is now also held while a vehicle
