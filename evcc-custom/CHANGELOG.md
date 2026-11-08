@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.319.0-lm1
+
+- Based on evcc 0.319.0 plus later evcc changes (new chargers and heat pumps,
+  tariffs, optimizer improvements).
+- **Split grid price:** a new grid tariff starts with **Fester Preis
+  (aufgeteilt)**: energy price, grid fee and levies, optional sales tax (empty =
+  amounts are gross). Zones change only the grid fee, as a new value or minus a
+  percentage, also across midnight. The plain fixed price stays available,
+  existing tariffs are unchanged.
+- **Mehr → Lastmanagement (Peak)** and its on/off switch are gone. The loads with
+  their state and the latest load management actions are now in **Mehr → Peak
+  Shaving** (called **Lastmanagement** without peak shaving). Circuits always
+  limit with their configured values. A switch left on "off" is removed at start,
+  so the configured limits apply again.
+- **Erweitert:** "Stromkreis Lastmanagement (Peak)", "Grenze = Peak-Shaving-Grenze"
+  and the peak shaving budget cap are gone (cap fixed at 2 × limit). To keep loads
+  below the peak limit, set the **Netzbezugsspitze** (Externe Begrenzung →
+  Statische Limits).
+
 ## 0.318.2-lm4
 
 - **Mehr → Peak Shaving** now shows what peak shaving does with the battery and
