@@ -12,7 +12,7 @@ from pytest_homeassistant_custom_component.common import MockConfigEntry, async_
 
 from custom_components.evcc_peak_fronius.const import DOMAIN
 
-from .conftest import DISCHARGE, GRID_CHARGE, MODE, FakeFronius
+from .conftest import DISCHARGE, GRID_CHARGE, MODE, MODE_KEY_OPTIONS, FakeFronius
 
 PREFIX = "evcc_peak_fronius"
 START = "2026-10-25 12:01:00+00:00"
@@ -533,3 +533,30 @@ async def test_measurements_frozen_after_grid_charge(
     fronius.measure(3000, 0, 15)
     await tick(hass, freezer, 11)
     assert status(hass) == "shaving"
+
+
+async def test_select_with_translated_keys(
+    hass: HomeAssistant,
+    mock_config_entry: MockConfigEntry,
+    fronius: FakeFronius,
+    freezer: FrozenDateTimeFactory,
+) -> None:
+    """fronius_modbus 1.4 names the modes by keys: written and read as keys."""
+    fronius.options = MODE_KEY_OPTIONS
+    fronius.set_mode("auto")
+    await setup(hass, mock_config_entry, freezer)
+    await evcc(hass, threshold=20, on=True, limit=2000)
+    assert fronius.take() == [("mode", "discharge_limit")]
+    assert status(hass) == "free"
+
+    fronius.measure(3000, 500, 15)
+    await tick(hass, freezer)
+    assert fronius.take() == [(DISCHARGE, 1500)]  # the mode is recognised as set
+
+    await tick(hass, freezer)
+    await evcc(hass, request="hold", on=False)
+    assert fronius.take() == [("mode", "block_discharging")]
+
+    await tick(hass, freezer)
+    await evcc(hass, request="normal")
+    assert fronius.take() == [("mode", "auto")]

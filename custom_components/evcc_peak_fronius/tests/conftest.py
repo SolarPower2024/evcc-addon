@@ -46,6 +46,17 @@ else:
         "Block Discharging",
         "Block Charging",
     ]
+    #: the same select from fronius_modbus 1.4 on: translated keys
+    MODE_KEY_OPTIONS = [
+        "auto",
+        "pv_charge_limit",
+        "discharge_limit",
+        "pv_charge_and_discharge_limit",
+        "charge_from_grid",
+        "discharge_to_grid",
+        "block_discharging",
+        "block_charging",
+    ]
     GRID = "sensor.meter_power"
     BATTERY = "sensor.battery_power"
     SOC = "sensor.battery_soc"
@@ -75,9 +86,11 @@ else:
         #: When False the numbers keep showing their value after a mode change,
         #: as fronius_modbus until its next scan.
         numbers_follow_mode: bool = True
+        #: The options of the mode select.
+        options: list[str] = field(default_factory=lambda: list(MODE_OPTIONS))
 
         def set_mode(self, mode: str) -> None:
-            self.hass.states.async_set(MODE, mode, {"options": MODE_OPTIONS})
+            self.hass.states.async_set(MODE, mode, {"options": self.options})
 
         def set_number(self, entity: str, value: float, maximum: float) -> None:
             self.hass.states.async_set(entity, str(value), {"min": 0, "max": maximum, "step": 1})

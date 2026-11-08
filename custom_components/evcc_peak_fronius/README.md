@@ -81,6 +81,8 @@ Hinweise zu fronius_modbus: Entladegrenze und Netzladeleistung sind dort nur im
 passenden Speichermodus verfügbar; die Integration schreibt sie erst, wenn der Modus
 steht. Nach einem Neustart von Home Assistant zeigt fronius_modbus „Discharge Limit“
 mit 0 W als „Block Discharging“; die Integration setzt den Modus dann einmal neu.
+Ab fronius_modbus 1.4 heißen die Modi intern `auto`, `discharge_limit` usw. (in der
+Oberfläche übersetzt); die Integration erkennt beide Benennungen.
 
 Bei jedem Wechsel auf `Charge from Grid` schaltet fronius_modbus über die Web-API
 die Ladequellen und baut Modbus neu auf; bis zu 30 s wiederholen seine Sensoren
