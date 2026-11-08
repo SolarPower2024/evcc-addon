@@ -49,6 +49,8 @@ from .const import (
     MODE_AUTO,
     MODE_DISCHARGE_LIMIT,
     MODE_GRID_CHARGE,
+    MODE_KEYS,
+    MODE_NAMES,
     MODE_RETRY_S,
     RECONNECT_S,
     REQUEST_NORMAL,
@@ -80,6 +82,11 @@ def _float(state: State | None) -> float | None:
         return float(state.state)
     except ValueError:
         return None
+
+
+def _mode_name(state: State) -> str:
+    """Return the mode of the select by its name, whatever naming it uses."""
+    return MODE_NAMES.get(state.state, state.state)
 
 
 def _usable(state: State | None) -> bool:
@@ -211,8 +218,8 @@ class PeakController:
         try:
             async with asyncio.timeout(RELEASE_TIMEOUT_S):
                 # free the limit first: should Auto not land, the battery is free
-                await self._free_limits(mode_state.state)
-                await self._call_select(self.mode_entity, MODE_AUTO)
+                await self._free_limits(_mode_name(mode_state))
+                await self._call_mode(MODE_AUTO)
         except Exception:
             _LOGGER.warning("Mode not handed back to Auto", exc_info=True)
             return
@@ -392,8 +399,9 @@ class PeakController:
         mode_state = self.hass.states.get(self.mode_entity)
         if not _usable(mode_state):
             return
-        if mode_state.state != target.mode:
-            if target.mode == MODE_AUTO and await self._free_before_release(mode_state.state, now):
+        current = _mode_name(mode_state)
+        if current != target.mode:
+            if target.mode == MODE_AUTO and await self._free_before_release(current, now):
                 return
             await self._change_mode(target.mode, now)
             return
@@ -470,7 +478,7 @@ class PeakController:
         if mode != MODE_AUTO:
             # From here on the integration may have changed the mode.
             await self._set_owned(True)
-        await self._guarded("mode", self._call_select(self.mode_entity, mode), now)
+        await self._guarded("mode", self._call_mode(mode), now)
 
     async def _write_number(
         self,
@@ -563,6 +571,13 @@ class PeakController:
             return
         self.owned = owned
         await self._store.async_save({"owned": owned})
+
+    async def _call_mode(self, mode: str) -> None:
+        """Write the mode in the naming the select uses."""
+        state = self.hass.states.get(self.mode_entity)
+        options = state.attributes.get("options", []) if state else []
+        option = mode if mode in options else MODE_KEYS.get(mode, mode)
+        await self._call_select(self.mode_entity, option)
 
     async def _call_select(self, entity: str, option: str) -> None:
         await self.hass.services.async_call(

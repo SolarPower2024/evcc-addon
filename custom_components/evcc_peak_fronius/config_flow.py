@@ -23,6 +23,7 @@ from .const import (
     CONF_SOC,
     DEFAULT_NAME,
     DOMAIN,
+    MODE_KEYS,
     REQUIRED_MODES,
 )
 
@@ -75,7 +76,7 @@ def _validate(hass: HomeAssistant, data: dict[str, Any]) -> dict[str, str]:
     errors: dict[str, str] = {}
     state = hass.states.get(data[CONF_MODE])
     options = state.attributes.get("options", []) if state else []
-    if not all(mode in options for mode in REQUIRED_MODES):
+    if not all(mode in options or MODE_KEYS[mode] in options for mode in REQUIRED_MODES):
         errors[CONF_MODE] = "mode_options"
     return errors
 

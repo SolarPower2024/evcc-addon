@@ -16,7 +16,7 @@ from custom_components.evcc_peak_fronius.const import (
     DOMAIN,
 )
 
-from .conftest import ENTRY_DATA, MODE, FakeFronius
+from .conftest import ENTRY_DATA, MODE, MODE_KEY_OPTIONS, FakeFronius
 
 
 async def test_user_flow_creates_entry(hass: HomeAssistant, fronius: FakeFronius) -> None:
@@ -89,3 +89,14 @@ async def test_options_flow_rejects_select_without_modes(
         )
     assert result["type"] is FlowResultType.FORM
     assert result["errors"] == {CONF_MODE: "mode_options"}
+
+
+async def test_user_flow_accepts_translated_keys(
+    hass: HomeAssistant, fronius: FakeFronius
+) -> None:
+    """fronius_modbus 1.4 names the modes by keys (shown translated)."""
+    hass.states.async_set(MODE, "auto", {"options": MODE_KEY_OPTIONS})
+    result = await hass.config_entries.flow.async_init(DOMAIN, context={"source": SOURCE_USER})
+    with patch("custom_components.evcc_peak_fronius.async_setup_entry", return_value=True):
+        result = await hass.config_entries.flow.async_configure(result["flow_id"], dict(ENTRY_DATA))
+    assert result["type"] is FlowResultType.CREATE_ENTRY

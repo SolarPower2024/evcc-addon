@@ -29,12 +29,25 @@ CONF_GRID_CHARGE = "grid_charge"
 CONF_RESET_BUTTON = "reset_button"
 
 # Options of the fronius_modbus select "Storage Control Mode" this
-# integration uses. They are the select's state keys, not translated.
+# integration uses, named as in older fronius_modbus versions.
 MODE_AUTO = "Auto"
 MODE_DISCHARGE_LIMIT = "Discharge Limit"
 MODE_GRID_CHARGE = "Charge from Grid"
 MODE_BLOCK_DISCHARGE = "Block Discharging"
 REQUIRED_MODES = (MODE_AUTO, MODE_DISCHARGE_LIMIT, MODE_GRID_CHARGE, MODE_BLOCK_DISCHARGE)
+
+# Newer fronius_modbus versions (1.4) use translated keys instead of the names.
+MODE_KEYS = {
+    MODE_AUTO: "auto",
+    "PV Charge Limit": "pv_charge_limit",
+    MODE_DISCHARGE_LIMIT: "discharge_limit",
+    "PV Charge and Discharge Limit": "pv_charge_and_discharge_limit",
+    MODE_GRID_CHARGE: "charge_from_grid",
+    "Discharge to Grid": "discharge_to_grid",
+    MODE_BLOCK_DISCHARGE: "block_discharging",
+    "Block Charging": "block_charging",
+}
+MODE_NAMES = {key: name for name, key in MODE_KEYS.items()}
 
 # Requests evcc sets on the own select entity.
 REQUEST_NORMAL = "normal"
