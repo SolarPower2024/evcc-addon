@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026.11.9
+
+Official optimizer image, build of 2026-11-09:
+
+- Faster solving: each stage now starts from the previous stage's plan, and the time limits of the stages scale with the overall time limit.
+- More robust answers: an incomplete solver result or an infeasible step is reported as a clear status instead of an error; implausible forecasts (above 100 MWh per step) are rejected.
+- Clearer plain-language explanations of why the home battery charges from the grid or not (off unless configured; evcc custom does not use them).
+- Updated dependencies. Results on our test plans are identical to the previous build.
+- Nothing to do for you.
+
 ## 2026.10.18
 
 Official optimizer image, build of 2026-10-18:

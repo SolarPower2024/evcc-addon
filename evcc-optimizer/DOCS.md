@@ -25,9 +25,10 @@ Both addons use the host network, so nothing else needs to be connected. Port
 image tag in `Dockerfile` its build. Both are bumped together when evcc custom
 moves to an evcc version that expects a newer optimizer.
 
-Current pin: build of 2026-10-18, the newest published image of the official
+Current pin: build of 2026-11-09, the newest published image of the official
 optimizer. It understands `c_active` (a vehicle already charging at the start
-of the plan), which evcc 0.316 sends, and solves faster with a hybrid solver.
+of the plan), which evcc 0.316 sends, and solves faster with a hybrid solver
+and warm starts between its stages.
 
 ## Resources
 
