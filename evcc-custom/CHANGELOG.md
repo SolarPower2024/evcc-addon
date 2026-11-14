@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.319.0-lm2
+
+- **Starting loads:** load management keeps the current or power just granted to
+  a load reserved for up to 1 minute until it draws it (a car needs up to a
+  minute to start). A second load, for example a heater, no longer switches into
+  the same gap and overloads the fuse. Also applies when a wallbox is raised.
+  Nothing to do; setting the **Abwurfschutz** for heaters and wallboxes is
+  recommended.
+- **Peak shaving:** a changed peak limit applies to the running quarter hour at
+  once.
+- Battery grid charging restarts reliably after the circuit stopped it.
+- **Removed settings:** Peak Shaving **Energiezähler Netzbezug** (set the energy
+  counter on the main circuit's meter instead), the **Leistungstarif** entry,
+  **Erweitert → Vorgabe ignoriert nach** (fixed at 3 cycles) and
+  **Schreib-Toleranz**. Values set there are dropped. Loadpoints defined in a
+  yaml file must not contain `lmpriority` anymore.
+
 ## 0.319.0-lm1
 
 - Based on evcc 0.319.0 plus later evcc changes (new chargers and heat pumps,

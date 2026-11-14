@@ -7,7 +7,7 @@ entries are needed.
 
 Everything is configured in the evcc ui under **Konfiguration →
 Lastmanagement-Details** (Batterie-Stromkreis, Prioritäten, Abwurfschutz,
-Batterie-Netzladen, Peak Shaving, Leistungstarif, Batterie-Vermessung, Profile,
+Batterie-Netzladen, Peak Shaving, Batterie-Vermessung, Profile,
 Erweitert) and on the
 **Hausbatterie** page (profile, switches, limits, soc values). **Mehr → Peak
 Shaving** (without peak shaving: **Mehr → Lastmanagement**) shows what peak
@@ -40,8 +40,7 @@ loads below it draw enough to cover the excess.
 
 That only works if they give way. A load that keeps drawing more than it was
 allowed while its circuit is overloaded (tolerance 300 W or 10 %) is no longer
-counted on after the set cycles, **Erweitert → Vorgabe ignoriert nach** (default
-3, 0 = off). The next load up the priority order is then cut instead. Example: the
+counted on after 3 cycles (fixed). The next load up the priority order is then cut instead. Example: the
 battery is told to grid-charge at 3 kW but keeps drawing 6.25 kW, so the heater
 above it is switched off. As soon as the load follows its limit again it counts
 again. The log shows a warning and the overview the event "folgt der Vorgabe
@@ -203,9 +202,7 @@ stops at 11 %); the reserve starts at 20 %.
 
 If evcc gets no meter values for over 2 minutes, the limit becomes the peak
 limit without the window, and grid charging pauses until the values are back.
-Both show in the log. **Schreib-Toleranz** (Lastmanagement-Details → Peak
-Shaving, default 0 W = every change) skips smaller changes of the grid charge
-power. Everything is written in watts; only the limit is shown in kW.
+Both show in the log. Everything is written in watts; only the limit is shown in kW.
 
 ### The 15 minute window
 
@@ -232,10 +229,7 @@ The energy drawn comes from, in this order:
 1. the energy counter of the main circuit's own meter, when it has one (it sees
    the whole import, the grid meter may leave out an energy community's part)
 2. the grid meter's import counter in evcc, when it has one
-3. a Home Assistant energy sensor, **Energiezähler Netzbezug** under
-   Lastmanagement-Details → Peak Shaving: a total counter in kWh or Wh, not a
-   daily value
-4. the grid power, which evcc only sees every 10 to 30 seconds
+3. the grid power, which evcc only sees every 10 to 30 seconds
 
 The dialog shows which one is in use. A counter that fails or stops updating is
 replaced by the grid power until the quarter hour ends, with a warning in the
@@ -284,13 +278,8 @@ The Hausbatterie page shows the raised limit and your own one.
 
 ### Capacity tariff (Leistungstarif)
 
-Lastmanagement-Details → **Leistungstarif**: price per kW and year up to a
-threshold, a higher price above it, the agreed power with the share billed at
-least, and a minimum power. Prefilled with the Austrian draft for 2027
-(33.82 €/kW/year up to 10 kW, double above, at least 20 % of the agreed power and
-2 kW; final amounts from December 2026). evcc keeps each
-month's capacity cost and the saving against the peak without the battery; they
-are not shown at the moment (Mehr → Peak Shaving shows the peak status instead).
+The Leistungstarif entry is removed until evcc offers its own view. evcc keeps
+recording each month's peak and keeps values entered earlier.
 
 ### Grid import limit for loads (Netzbezugsspitze, preview)
 
@@ -332,6 +321,14 @@ switching off a running load counts: a switch that loses its budget, or a
 wallbox pushed below its minimum current. A load that could not start for lack
 of power is not held off. Set it under **Lastmanagement-Details →
 Abwurfschutz**, the minutes and a tick per loadpoint.
+
+**Starting loads:** a load that was just granted more current or power (a car
+takes up to a minute to draw after it was enabled or raised) keeps the part it
+does not draw yet reserved in its circuit for up to 1 minute (fixed). Another
+load does not switch into that gap, so a wallbox and a heater starting together
+do not overload the fuse. It ends as soon as the load draws or is switched off,
+never cuts what a load already draws, and applies whatever the priority. Nothing
+to set; with the shed guard the two also do not flap.
 
 ## 7. Loads and actions (Mehr → Peak Shaving)
 
