@@ -15,10 +15,22 @@ may run. The development add-on never starts by itself.
 
 ## Data
 
-It starts with an empty database. To test with your devices and settings:
-in evcc custom Konfiguration → System → **Sicherung herunterladen**, then here
-Konfiguration → System → **Wiederherstellen** with that file. What changes here
-stays here, the database of evcc custom is not touched.
+It has its own database. Konfiguration → System → **Debug** → **Testversion**
+exchanges data with evcc custom while evcc custom is stopped:
+
+- **Daten von evcc custom übernehmen**: replaces the database here by a copy of
+  the one of evcc custom (devices, settings, history), keeps what was recorded
+  here since evcc custom stopped, then restarts. The database of evcc custom is
+  only read. The hint "noch nicht übernommen" shows until this was done.
+- **Daten an evcc custom zurückgeben**: writes what was recorded here since
+  then into evcc custom: charging sessions, energy statistics and peak values
+  (on), devices and settings (off, each replaces those of evcc custom). A backup
+  `evcc.db.bak-dev` is made next to its database first; existing values are
+  never overwritten. evcc custom sees the data at its next start.
+
+The database of evcc custom is expected as `evcc.db` in its add-on folder
+(`sqlite_file: /config/evcc.db`); the preview shows the path found. Without it
+the buttons stay off; a backup and **Wiederherstellen** still work.
 
 ## Everything else
 

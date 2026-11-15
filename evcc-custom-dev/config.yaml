@@ -1,6 +1,6 @@
 ---
 name: evcc custom development
-version: 0.319.0-lm4
+version: 0.319.0-lm5-dev1
 slug: evcc_custom_dev
 description: Test version of evcc custom for new functions, started instead of evcc custom (own database)
 url: https://github.com/SolarPower2024/evcc
@@ -25,6 +25,8 @@ host_network: true
 legacy: true
 uart: true
 homeassistant_api: true
+# restarts itself after taking over the data of evcc custom (Debug)
+hassio_api: true
 
 arch:
   - aarch64
@@ -32,6 +34,9 @@ arch:
 
 map:
   - type: app_config
+    read_only: False
+  # the database of evcc custom for Debug → Testversion (take over, give back)
+  - type: all_addon_configs
     read_only: False
   - type: homeassistant_config
     read_only: False
@@ -61,6 +66,10 @@ ports_description:
 # built by .github/workflows/custom-image.yml in the evcc fork.
 # the image tag is taken from `version` above, so both must be bumped together.
 image: ghcr.io/solarpower2024/evcc-custom
+
+# where Debug → Testversion finds the database of evcc custom
+environment:
+  EVCC_DEVTRANSFER: /addon_configs/*_evcc_custom/evcc.db
 
 options:
   sqlite_file: /data/evcc.db
