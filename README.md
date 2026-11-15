@@ -14,6 +14,10 @@ Then install **evcc custom** from the store, and optionally **evcc optimizer** t
 run the optimizer locally instead of the cloud service (see
 [evcc-optimizer/DOCS.md](evcc-optimizer/DOCS.md)).
 
+**evcc custom development** is the test version of evcc custom: new functions
+are released there first, with its own database and manual start; stop evcc
+custom while it runs (see [evcc-custom-dev/DOCS.md](evcc-custom-dev/DOCS.md)).
+
 **PR35251 Test** runs the official test image of evcc PR 35251 with its own
 database, only for testing; stop evcc custom while it runs (see
 [evcc-pr35251-test/DOCS.md](evcc-pr35251-test/DOCS.md)).
@@ -39,6 +43,6 @@ and published to `ghcr.io/solarpower2024/evcc-custom`.
 
 1. In the evcc fork, tag the commit: `git tag v<evcc version>-lmN && git push origin v<evcc version>-lmN`
 2. Wait for the *Custom image* workflow to push `ghcr.io/solarpower2024/evcc-custom:<evcc version>-lmN`
-3. Here, bump `version:` in `evcc-custom/config.yaml` to `<evcc version>-lmN`, add its changelog entry and push
+3. Here, bump `version:` in `evcc-custom-dev/config.yaml` (test version) or `evcc-custom/config.yaml` to the image tag, add its changelog entry and push
 
 Home Assistant then offers the update.

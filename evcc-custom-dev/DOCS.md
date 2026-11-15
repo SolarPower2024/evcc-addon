@@ -1,0 +1,668 @@
+# evcc custom development
+
+Test version of **evcc custom**: new functions arrive here first and move to
+evcc custom once they are tested. The same image and the same settings as evcc
+custom, but its own database.
+
+## Only one of the two at a time
+
+Both use port 7070 and control the same wallbox, battery and loads, so only one
+may run. The development add-on never starts by itself.
+
+1. Stop **evcc custom**.
+2. Start **evcc custom development**.
+3. After the test: stop it and start evcc custom again.
+
+## Data
+
+It starts with an empty database. To test with your devices and settings:
+in evcc custom Konfiguration → System → **Sicherung herunterladen**, then here
+Konfiguration → System → **Wiederherstellen** with that file. What changes here
+stays here, the database of evcc custom is not touched.
+
+## Everything else
+
+As in evcc custom:
+
+evcc with additions for load management, the home battery and peak shaving.
+All of them are inert until configured, so this behaves like the official addon
+until you switch something on. Everything is set up in the ui, no `evcc.yaml`
+entries are needed.
+
+Everything is configured in the evcc ui under **Konfiguration →
+Lastmanagement-Details** (Batterie-Stromkreis, Prioritäten, Abwurfschutz,
+Batterie-Netzladen, Peak Shaving, Batterie-Vermessung, Profile,
+Erweitert) and on the
+**Hausbatterie** page (profile, switches, limits, soc values). **Mehr → Peak
+Shaving** (without peak shaving: **Mehr → Lastmanagement**) shows what peak
+shaving does with the battery and why, and what load management does with the
+loads.
+
+## 1. Load management priorities
+
+One priority decides who gives way when a circuit runs out of budget:
+**lower is shed first.** For a loadpoint it is its regular evcc priority, the
+same one that distributes pv surplus, so pv surplus, planned charging and load
+management follow one order. The home battery has no evcc priority and keeps a
+value of its own on the same 0-10 scale.
+
+Set it under **Lastmanagement-Details → Prioritäten** for every loadpoint on a
+circuit and for the home battery once it is assigned to one: drag the loads into
+order, the most important on top. A drag numbers all of them from the bottom
+(0, 1, 2 …, at most 10). A loadpoint's value is also shown and editable in its
+own settings. Changes apply immediately. Loads without a circuit do not take
+part and are not listed. Without differing priorities nothing changes versus
+the official evcc.
+
+Recovery uses the same mechanism in reverse: power that frees up stays withheld
+from lower-priority loads for as long as someone above still reports unmet
+demand. Each rung costs one update cycle, and evcc updates one loadpoint per
+cycle, so a full shed or recovery takes up to `interval x loadpoints`.
+
+**Overload** is shed from the bottom: a load keeps what it draws as long as the
+loads below it draw enough to cover the excess.
+
+That only works if they give way. A load that keeps drawing more than it was
+allowed while its circuit is overloaded (tolerance 300 W or 10 %) is no longer
+counted on after 3 cycles (fixed). The next load up the priority order is then cut instead. Example: the
+battery is told to grid-charge at 3 kW but keeps drawing 6.25 kW, so the heater
+above it is switched off. As soon as the load follows its limit again it counts
+again. The log shows a warning and the overview the event "folgt der Vorgabe
+nicht".
+
+**Home Assistant switches** (heaters and the like) can only be on or off, so
+load management switches them on only when their whole power fits, against
+the circuit's power limit and its current limit (fuse) alike, and off when it
+no longer does. Enter the power the device draws when on in the switch's
+field **Leistung** (W). evcc checks it before switching on and uses it while
+there is no measurement; without a power sensor it is also shown as the
+device's power. Without the field evcc uses the last measured power, or 3680 W
+(16 A) before the first measurement.
+
+## 2. Battery in load management
+
+The home battery's grid charging power counts against a circuit. Assign the
+circuit under **Lastmanagement-Details → Batterie-Stromkreis**; for the
+battery the circuit needs a power limit in kW, a current limit alone is not
+checked.
+
+Under **Batterie-Netzladen** you choose how the battery charges from the grid:
+
+- **On/off** (no charge power entity): charging only starts when the full
+  expected charge power fits into the circuit.
+- **Dynamic** (with a charge power entity, e.g. `input_number.battery_charge_power`):
+  evcc writes the permitted charge power in W every cycle, the smallest of the
+  expected charge power, the room below the peak limit (when peak shaving is on)
+  and the room in the circuit. Below 500 W it does not charge and writes 0. Your
+  Home Assistant automation sets the battery's charge power from it. The value
+  is fitted to the entity's min, max and step, rounded down so the limits hold.
+
+A battery driven through Home Assistant mode scripts can only be switched on or
+off, so the **full expected charge power** (Batterie-Netzladen) has to fit into
+the budget, against the circuit's power and its current limit (the current spread
+over the battery phases, Erweitert, default 3; with a current limit on the battery's circuit or one above it the phases must be set, otherwise grid charging stays off and the field is shown in red). Set it to the power the battery realistically draws, not its
+nameplate maximum, otherwise grid charging blocks itself unnecessarily. Empty
+falls back to the sum of the battery meters' maximum charge power; with neither,
+grid charging on a circuit stays off.
+
+After load management stopped grid charging it waits (Erweitert, default
+5 minutes), as stopping it frees exactly the power that would let it start
+again.
+
+## 3. Soc-based grid charging
+
+A switch plus a start and a stop soc, independent of the price-based grid charge
+limit. Configure it on the **Hausbatterie** page, card **Netzladen nach
+Ladestand**. Charging starts once
+the soc is at or below the start value and runs until the stop value is reached.
+
+It goes through the same battery mode path as price-based grid charging, so a
+Home Assistant battery triggers its `modeCharge` script as usual. The battery's
+own `maxsoc` still applies on top as a hard ceiling.
+
+Also available via the api:
+
+```
+POST /api/batterysocgridcharge/{true|false}
+POST /api/batterysocgridchargestart/{soc}
+POST /api/batterysocgridchargestop/{soc}
+```
+
+### Charge once
+
+Below it on the battery page: **Einmalig laden**, the sentence **Bis … aus dem Netz laden, …**: both
+values are picked in the sentence, the soc and **sofort** (right away) or
+**bis HH:MM** (half-hour steps) at the cheapest time before it (from the planner
+tariff; right away when the time has passed or the duration is unknown). It
+switches itself off at the target soc, continues across restarts and has a
+cancel button. The last chosen soc is kept as the preset for the next start. It ends by itself if the battery is removed. The same checks as soc-based grid charging apply (peak,
+circuit, charge power).
+
+```
+POST   /api/batterygridchargeonce/{soc}[/{HH:MM}]
+DELETE /api/batterygridchargeonce
+```
+
+## 4. Peak shaving
+
+Caps the grid demand peak a demand charge (Leistungspreis) is billed on, by
+holding the battery's lower soc range back as a reserve.
+
+Configure it on the **Hausbatterie** page: a switch and the reserve soc. The value
+of the peak limit there opens **Externe Begrenzung → Statische Limits →
+Netzbezugsspitze**, where it is set. It also limits the loads, see below. Without
+a limit the battery holds no reserve and the page says so; for the battery it is
+at least 2 kW.
+
+evcc does not regulate the battery itself. The regulation runs in Home
+Assistant, within seconds, and evcc sets its values: **Lastmanagement-Details →
+Peak Shaving → Peak-Regelung in Home Assistant**, one section for both battery
+types:
+
+- **Batterietyp**: *BYD (evcc Peak Fronius)* or *Marstek (Omnibattery)*. The type
+  only sets the limits of the device and the placeholders.
+- **Peak-Shaving-Schalter**, **Peak-Shaving-Limit**, **SoC-Schwelle**: the
+  switch, the allowed grid power and the reserve of the regulation in Home
+  Assistant. evcc writes the switch on while peak shaving runs, the grid power
+  allowed in the running 15 minute window as limit and the reserve as threshold.
+  Without the three entities peak shaving cannot be switched on.
+
+| Battery soc | What the regulation in Home Assistant does |
+| --- | --- |
+| above the reserve | ordinary self-consumption |
+| below the reserve | only covers what exceeds the limit, keeps charging from pv |
+
+Below the reserve evcc keeps the battery in normal mode, except for a hold evcc
+decides itself (e.g. Entladesperre while a vehicle fast charges or follows a plan,
+without optimizer automatic): the hold script runs, peaks are still covered.
+
+Values are written only when Home Assistant shows something else; peak shaving
+off, a type change or a removed entity switches the regulation off, but only if
+evcc switched it on. Stopping evcc hands back as well.
+
+### BYD with Fronius (integration evcc Peak Fronius)
+
+Needs the Home Assistant integration **evcc Peak Fronius** (HACS → ⋮ → Custom
+repositories → `https://github.com/SolarPower2024/evcc-addon`, category
+*Integration*) on top of fronius_modbus. It sets the storage control mode, the
+discharge limit and the grid charge power of the inverter; Fronius keeps
+regulating self-consumption. Enter its entities: `switch.evcc_peak_fronius_peak_shaving`,
+`number.evcc_peak_fronius_limit`, `number.evcc_peak_fronius_soc_threshold`, and
+under Batterie → Netzladen `number.evcc_peak_fronius_grid_charge_power` as
+grid charge power.
+
+- The limit is also evcc's sign of life: evcc writes it every cycle (at least
+  100 W), also without peak shaving. Without it for more than 2 minutes into a
+  quarter hour, and when evcc stops, the integration gives the battery free.
+- The battery modes stay evcc's: the Home Assistant scripts of the evcc battery
+  modes set `select.evcc_peak_fronius_request` (normal → `normal`, hold →
+  `hold`, grid charging → `grid_charge`) and no longer switch the Fronius
+  storage mode themselves. A hold with peak shaving on still covers peaks.
+- The reserve band (hysteresis) is 2 %, as in the integration.
+- Before: evcc wrote a discharge setpoint into an entity (*Entladeregler*) and a
+  free value. That way is gone; at the first start evcc sets an entity it still
+  held back to the free value once, then forgets both. Peak shaving with the old
+  entity stays off until the new entities are set.
+
+### Marstek (Omnibattery)
+
+Omnibattery's own peak shaving (Spitzenlastkappung) regulates every second on
+its own meter, e.g. `switch.marstek_venus_system_spitzenlastkappung`,
+`number.marstek_venus_system_spitzenlastkappung_limit` and
+`number.marstek_venus_system_spitzenlastkappung_soc_schwelle`. Below
+**Netzladen (nur Marstek)** the manual control switch and the force mode select
+(options `None`, `Charge`, `Discharge`) for grid charging, with the charge
+power entity under Batterie-Netzladen.
+
+| Situation | What evcc writes |
+| --- | --- |
+| grid charging | manual on, `Charge`, charge power; afterwards charge power 0 and manual off |
+
+The SOC threshold is at least 20 %. There is no hysteresis for Marstek. Home
+Assistant scripts for the evcc battery modes must not switch the manual
+control, the mode or the charge power. On the battery page the soc selects of
+soc grid charging offer 15 % down to 11 % in 1 % steps for this type (a Marstek
+stops at 11 %); the reserve starts at 20 %.
+
+If evcc gets no meter values for over 2 minutes, the limit becomes the peak
+limit without the window, and grid charging pauses until the values are back.
+Both show in the log. Everything is written in watts; only the limit is shown in kW.
+
+### The 15 minute window
+
+A demand charge is billed on the average of each quarter hour (:00, :15, :30,
+:45), so the limit applies to that average, not to the momentary grid power.
+`allowed` is the grid power that keeps the running quarter hour's average at
+the limit: `(limit × 15 min − energy drawn so far) / time left`. Drawing less
+early on allows more later, so a short spike is only covered when the quarter
+hour as a whole would end above the limit. Example: 5 kW limit, nothing drawn
+for 5 minutes, then 7.5 kW are allowed for the remaining 10.
+
+- `allowed` is at most **2 × the limit**.
+- From **minute 12** on it no longer grows, only falls (Erweitert → freeze
+  minute). A meter clock off by a few seconds could otherwise move a large late
+  draw into the next quarter hour.
+- Once a quarter hour's budget is spent, `allowed` is 0 and the setpoint is
+  the whole demand. This only happens when the battery could not deliver
+  earlier.
+- The part of a quarter hour evcc did not see (after a start) counts at the
+  limit.
+
+The energy drawn comes from, in this order:
+
+1. the energy counter of the main circuit's own meter, when it has one (it sees
+   the whole import, the grid meter may leave out an energy community's part)
+2. the grid meter's import counter in evcc, when it has one
+3. the grid power, which evcc only sees every 10 to 30 seconds
+
+The dialog shows which one is in use. A counter that fails or stops updating is
+replaced by the grid power until the quarter hour ends, with a warning in the
+log. Grid charging still pauses on the momentary demand above the limit.
+
+### Why the demand is not simply the grid meter reading
+
+Once the battery starts shaving, the grid meter no longer shows the load, it
+shows the result of the controller's own work. Deriving the setpoint from it
+would oscillate: shave, see a compliant grid value, stop, see the peak return.
+evcc therefore adds the battery power back to recover the underlying demand,
+which is independent of what the battery is doing. `TestPeakSetpointIsStable`
+in the fork pins this down.
+
+### Interaction with the other features
+
+While the reserve is being held, evcc keeps the battery in **normal** mode so
+the regulation in Home Assistant can discharge it for peaks. Grid charging (soc or price based) still works
+below the reserve, with two rules:
+
+- A demand peak, meaning consumption **without** the battery above the peak
+  limit, pauses grid charging for 5 minutes and the battery shaves instead.
+- The charge power itself is not counted against the peak limit. In on/off mode
+  charging can therefore push the grid above the limit (e.g. 1 kW house + 6.25 kW
+  charging). Use the dynamic charge power entity to keep charging below it.
+
+Peak shaving alone is the expensive lever. Reducing a wallbox from 11 to 4 kW
+costs charging time; emptying the battery costs a cycle and leaves nothing for
+the next peak. Giving the wallbox the lowest priority lets load management take
+the first bite when the circuit limit is reached.
+
+### Peak status (Mehr → Peak Shaving)
+
+Shown once peak shaving is set up, also while it is off. On top a tile with what
+happens now (free, saving for peaks, covering a peak, hold, grid charging or
+discharge, meter outage, storage not reachable, off), storage, grid and the
+running quarter hour; below the reason in one sentence, mode and storage
+connection, the quarter hour, the month's peak and the events of the last 7 days.
+
+### A peak above the limit
+
+A capacity tariff bills the month's highest quarter hour. Once the month already
+has a peak above your limit, shaving below it saves nothing: the battery's limit
+is that peak (rounded down to 100 W), and a new month starts at your limit again.
+The Hausbatterie page shows the raised limit and your own one.
+
+### Capacity tariff (Leistungstarif)
+
+The Leistungstarif entry is removed until evcc offers its own view. evcc keeps
+recording each month's peak and keeps values entered earlier.
+
+### Grid import limit for loads (Netzbezugsspitze, preview)
+
+Konfiguration → **Externe Begrenzung** → **Statische Limits**, opened from the value
+on the Hausbatterie page. Otherwise it needs **Einstellungen → Experimentell** and
+shows with the country Austria or Belgium, or once a value is set. It keeps loads on the main circuit below the higher
+of the value set here and the month's highest quarter hour so far, read from the
+main circuit's meter if it has an energy counter, else from the grid meter.
+
+- This is a preview of a function evcc has not finished; it may change or go away.
+- It is also peak shaving's limit. The battery keeps covering peaks in **Schnell**.
+- **Schnell** on any charging point lifts it for the whole home, also without a car.
+- Best set at the start of a month: a higher peak earlier in the month is not known
+  when the main circuit's counter started recording later.
+
+## 5. Second feed-in tariff (EEG)
+
+If part of the export goes to an energy community (EEG), add **Einspeisevergütung
+EEG hinzufügen** below the feed-in tariff: a fixed price, 0 is allowed. In its
+card, **Zähler festlegen** sets the Home Assistant energy counter of the EEG
+export (kWh or Wh). evcc then records the EEG export per quarter hour; the
+standard feed-in is the total export of the grid meter minus EEG. Only
+counters are used, the grid power that drives pv control, load management and
+peak shaving is not touched, and self-consumption keeps being valued at the
+standard tariff. The energy page (tab **Energie**, shown with **Einstellungen →
+Experimentell**) shows the revenue of the standard feed-in and of EEG as separate
+tiles, also without a grid price; its grid chart shows feed-in as evcc does.
+
+The line **EEG-Bezug** in the same card sets the counter of what you draw from the
+energy community (kWh or Wh). It is for display only: a green bar in the grid
+chart. Optional, off without a counter. The data is also available via
+`GET /api/feedinsplit`.
+
+## 6. Shed guard (Abwurfschutz)
+
+A protected loadpoint that load management had to switch off stays off for the
+set minutes (0 to 120, 0 = off), even if the power is back earlier. Only
+switching off a running load counts: a switch that loses its budget, or a
+wallbox pushed below its minimum current. A load that could not start for lack
+of power is not held off. Set it under **Lastmanagement-Details →
+Abwurfschutz**, the minutes and a tick per loadpoint.
+
+**Starting loads:** a load that was just granted more current or power (a car
+takes up to a minute to draw after it was enabled or raised) keeps the part it
+does not draw yet reserved in its circuit for up to 1 minute (fixed). Another
+load does not switch into that gap, so a wallbox and a heater starting together
+do not overload the fuse. It ends as soon as the load draws or is switched off,
+never cuts what a load already draws, and applies whatever the priority. Nothing
+to set; with the shed guard the two also do not flap.
+
+## 7. Loads and actions (Mehr → Peak Shaving)
+
+Once a circuit has a **Max. Leistung** or **Max. Stromstärke**, the dialog
+**Mehr → Peak Shaving** (without peak shaving it is called **Lastmanagement**)
+lists every load on a circuit, including battery grid charging as "Batterie
+(Netzladen)", by priority (throttled and switched off from the bottom up), with
+its power, its state (charging, throttled, waiting, shed with the time it stays
+off, paused, off), a lock while the shed guard holds it off, and a mark when the
+optimizer decides. Below, **Letzte Eingriffe** shows the latest load management
+actions (shed, switched on again, throttled, not following its limit, grid
+charging blocked); the peak events stay under **Zuletzt**. The events are kept in memory and start empty
+after a restart.
+
+There is no switch to turn load management off any more: the circuits always
+limit with the values set in their configuration, as in evcc. To lift a limit,
+change the circuit.
+
+An exceeded power limit no longer pops up as a notification (top right), load
+management handles it by shedding; it stays in the log. An exceeded current
+limit (fuse) is still shown.
+
+## 8. Battery profiles
+
+Set up under **Lastmanagement-Details → Profile**, picked on the **Hausbatterie**
+page. A profile has a name, an icon and any of these values, each with a tick:
+
+- Netzladen: soc grid charging on/off, start soc, stop soc
+- Batterienutzung: surplus to the battery first up to, battery as charging
+  buffer from, start charging from, discharge lock in fast and planned charging
+- Lastspitzenkappung: on/off, reserve soc, peak limit
+- Wallbox: solar share per wallbox (heating devices are not offered)
+
+Values not ticked stay as they are when switching. "Aktuelle Werte übernehmen"
+fills the profile with what is set right now. Switching runs the same checks as
+setting a value by hand; if one value cannot be applied, the others still are
+and the battery page shows which one failed.
+
+## 9. Advanced settings (Erweitert)
+
+Under **Lastmanagement-Details → Erweitert**, in four collapsed groups
+(Lastmanagement, Peak Shaving, Batterie-Netzladen, Optimizer): grid charge
+hold-off after a peak or the circuit stopped it (5 min), reservation expiry for
+waiting higher priority loads (10 min), the battery's phases for current limits
+(3), the minute from which the peak shaving budget stops growing (12), the cycles
+after which a load ignoring its limit is no longer counted on (3, 0 = off), and
+the longest the optimizer plans soc-based battery grid charging from the start to
+the stop soc (3 h): it plans the charging time at the grid charge power, at most
+this; with peak shaving as long as the room below the limit takes.
+
+To keep loads below the peak limit, use the **Netzbezugsspitze** (Externe
+Begrenzung → Statische Limits).
+
+### Consumption forecast and battery identification
+
+Under **Erweitert**, **Verbrauchsprognose** chooses how the optimizer forecasts
+the home consumption: **evcc** (average of the last 28 days), **Nach
+Wochentag** (the same weekday of the last 8 weeks; weekends differ from working
+days) or **Manuell (Lastprofil)**: upload a csv right there with a column
+`zeit` (96 quarter hours or 24 hours) and one column per month in W, e.g.
+`01-werktag` and `01-wochenende` or just `01` (separator `;` or `,`,
+home consumption without wallboxes and battery, missing months take the
+nearest). It is mixed with the last 8 weeks, recent days counting more and the
+more the profile misses them; until a profile is uploaded evcc's forecast
+applies. **Sicherheitszuschlag
+Verbrauch** takes a higher percentile (60-90 %) instead of the mean, so the
+optimizer keeps more battery back.
+
+**Lastmanagement-Details → Batterie-Vermessung** learns the battery's usable
+capacity and round trip efficiency from the charging and discharging runs of
+the last 60 days (each over 20 % soc, at least 3 each way). With **Gemessene
+Werte verwenden** the optimizer plans with the measured capacity and one-time
+grid charging with capacity and efficiency; implausible values are not used.
+
+## 10. Optimizer
+
+The optimizer (Konfiguration → Experimentell and Optimizer, needs a sponsor
+token) gets the settings above as inputs, so its plan, the battery soc forecast
+and its suggestions match what evcc does: the peak limit as grid import limit,
+the peak reserve and the start soc of soc-based grid charging as minimum soc,
+the charge to the stop soc once charged, from now while it runs and else from
+where the battery is expected to fall to the start soc: from there the
+optimizer plans the rest again, starting with that charge, so the forecast
+shows the discharge to the start soc and the grid charge to the stop soc (only
+while it is switched on), a one-time grid charge as goal, a loadpoint's
+circuit power as its limit and the priorities.
+
+With peak shaving the forecast follows the reserve as evcc runs it: where the
+plan would go over the limit while the battery holds the reserve, it is planned
+again and the battery covers the part above the limit below the reserve, down
+to its own minimum soc; what charges below the reserve (pv surplus, running or
+one-time grid charging) stays there for peaks. Without peaks it stops at the
+reserve. Grid charging is planned slot by slot as evcc charges, only with the room below
+the limit, and pauses while the demand exceeds it (switched grid charging
+without a charge power entity draws its full power, also in the forecast). A
+start or stop of grid charging plans again right away. It can run locally: install the
+addon **evcc optimizer** and set **OPTIMIZER_URI** to its address, e.g.
+`http://localhost:7050` on the same host.
+
+**Planning price.** With a real grid price close to the feed-in price (e.g.
+10 ct vs 9 ct) the optimizer never discharges the battery: its losses
+make stored energy worth more than the saving. Add a planner tariff (Tarife →
+Vorhersage hinzufügen → Planer-Vorhersage → fixed price) of at least 1.25 ×
+the feed-in price, e.g. 12 ct: the optimizer plans with it, statistics and
+costs keep the grid tariff. Note that the planner tariff also drives vehicle
+charge plans, so do not use a fixed one together with a dynamic grid tariff.
+
+**Automatic mode:** evcc's optimizer settings offer an automatic mode (battery
+only, or battery and loadpoints); it now works together with the fork. The
+optimizer decides the battery mode, the peak limit and the circuits stay hard
+limits: its grid charging passes the same gate as the fork's own (circuit,
+peak, charge power) and becomes hold when refused; a hold gives way to normal
+while a peak has to be covered. Soc grid charging is a target for it (start =
+lower bound, stop = goal), price based grid charging is the optimizer's. A
+profile's discharge lock is skipped in automatic mode. Without an optimizer
+result for 30 minutes the fork charges by itself again. Heaters and switch
+devices are never steered by the optimizer; load management still sheds them.
+With peak shaving on, a hold raises the soc threshold of the regulation in Home
+Assistant to 100 %, so the battery only covers peaks. Off by default.
+
+## 11. Heater in stages
+
+For a heater with one switch per stage, e.g. a 3 x 3 kW heating rod switched
+per phase: add a heater (Ladepunkt oder Heizung hinzufügen → Heizung) with the
+device **Home Assistant Heizstab in Stufen**. Enter the switches of stage 1 to
+3, the power per stage and, recommended, a power sensor with the total power
+(e.g. a Home Assistant helper "combine the state of several sensors", type
+sum). Set the loadpoint to 3 phases when there is one stage per phase.
+
+evcc switches on as many whole stages as fit into the released power, never
+rounding up a partial stage. Load management steps it down stage by stage
+(9 → 6 → 3 kW) instead of switching it off, and a load with a higher priority
+takes the power stage by stage. Switching down is immediate, highest stage
+first; a higher stage waits until the last change is the set delay old
+(advanced field of the device, default 1 minute). With a power sensor, a draw up to the standby
+power (default 15 W) shows **bereit** instead of **heizt**, e.g. while the
+heater's own thermostat has cut out; the loadpoint stays on. Without a power
+sensor the power is an assumption (stages switched on × power per stage).
+Control and load management use it; the home consumption, energy flow, energy
+history and sessions only count measured power, so the heater's real draw
+shows in the home consumption, also while its thermostat has cut out. The
+heater card shows the assumption as "≈ 6 kW"; a kWh charge limit does not
+apply then. The config page lists each stage's switch with the
+loadpoint's values (**Stufen ein · ein · aus**).
+
+Moving from one switch loadpoint per stage: create the new heater, set its
+priority, shed guard and the solar share in the profiles, then delete the old
+switch loadpoints.
+
+## 12. Phase switching: currents and delays
+
+Loadpoints whose charger switches between 1 and 3 phases get more fields under
+**Elektrik**:
+
+- **Minimaler / Maximaler Strom 1-phasig** (optional): the current range on one
+  phase. The regular fields are then the 3-phase range. Switching to 3 phases
+  needs 1-phase at its maximum and the surplus at the 3-phase minimum;
+  switching back happens below the 3-phase minimum. Example: 1-phase up to
+  about 4 kW and 3-phase from 5 kW: 1-phasig 6-17 A, 3-phasig 7.3-16 A (7 or
+  8 A if the charger only takes whole amps). Should the minimum on 1 phase end
+  up above the 1-phase maximum (min current changed later, e.g. through Home
+  Assistant), it charges at the 1-phase maximum and logs a warning.
+- **Verzögerung auf 3 Phasen / auf 1 Phase** (optional, minutes): how long the
+  surplus has to allow or miss 3 phases before switching. Empty = the enable
+  and disable delay. Starting and stopping charging keep those, so charging
+  can start after 1 minute while the phases only switch after e.g. 5 minutes.
+
+A switch comes up to one control cycle after the delay. After every switch
+evcc waits 60 s before it switches again. Empty fields behave as the official
+evcc.
+
+## 13. Log file (Log-Datei)
+
+evcc's log page keeps only the last 10,000 lines, an hour or two at debug. On
+the log page, the button **Log-Datei** writes the log to daily files as well:
+
+- **Log-Datei schreiben**: off by default, nothing is written while off.
+- **Level** (default debug): only for the file, the add-on log keeps its level.
+- **Aufbewahrung** (1-90 days, default 14, today included).
+
+The files are `/config/logs/evcc-YYYY-MM-DD.log`, older days packed as
+`.log.gz`, at most 1 GB together (the oldest go first; if today's file alone
+reaches 1 GB it pauses until the next day). The dialog lists the files with
+date and size, newest first, and downloads each one (today as text, older days
+as `.log.gz`). They are also readable through the Samba share under
+`addon_configs\<id>_evcc_custom\logs`. Switching on also writes the lines
+from before, so the start of evcc is in the file after every restart.
+
+## 14. Snow on PV (Schnee auf PV)
+
+Prognose-Seite → Solar → **Schnee auf PV**. While on, the optimizer plans
+without solar yield (the forecast shown and the control stay as they are).
+Turns off by itself once the production reaches 70 % of the forecast for one
+hour (quarter hours with less than 100 Wh forecast do not count). Off by
+default, kept across restarts.
+
+**Schnee automatisch erkennen** (only with an Open-Meteo solar forecast): every
+30 minutes the snowfall at the forecast's location is checked. 1 cm within 24
+hours at up to +1 °C, including snow forecast until the next sunrise, turns the
+switch on. Thawing is not predicted, the switch goes off by the measurement.
+Snow already counted does not turn it on again, also after turning it off by
+hand; new snow does.
+
+Both switches sit with **anpassen** in one row under the chart; their help is a
+tooltip on the ⓘ next to them.
+
+## 15. Export forecast (Einspeise-Prognose)
+
+Lets a second evcc custom instance plan with the grid export the first one
+expects, through Home Assistant. Off by default.
+
+- **Instance A (writes):** Lastmanagement-Details → Erweitert → Optimizer →
+  **Einspeise-Prognose an Home Assistant**, e.g.
+  `sensor.evcc_einspeiseprognose` (only `sensor.*`, empty = off, add-on only).
+  After every optimizer run the planned export goes into the attribute
+  `forecast` as a list of `start`, `end` and `value` in W. evcc creates the
+  sensor itself, no helper needed. After a Home Assistant restart it is
+  missing until the next optimizer run.
+- **Instance B (reads):** Konfiguration → Solar-Vorhersage hinzufügen →
+  **Home Assistant Prognose-Entität**, pick the instance and the sensor
+  (attribute and interval under "erweitert"). An own solar forecast of B stays;
+  evcc adds both per quarter hour.
+- Never read it in the instance that writes it: the optimizer would plan with
+  double the solar power.
+- Keep the sensor out of the recorder:
+  `recorder: exclude: entities: [sensor.evcc_einspeiseprognose]`.
+
+## 16. Split grid price (Fester Preis (aufgeteilt))
+
+For a new **Netzbezug** tariff the template **Fester Preis (aufgeteilt)** is
+preselected (the plain **Fester Preis** stays available). Fields:
+**Arbeitspreis** (energy price), **Netzgebühr** (grid fee), **Abgaben** (other
+per kWh amounts, e.g. electricity levy) and an optional **Umsatzsteuer** in %:
+empty means the amounts are gross, with a value they are net and the tax is
+added. **Zonen** (months, weekdays, time, also across midnight) change only the
+grid fee: either a new value or **minus percent** (0–100), e.g. April to
+September 10–16 h minus 20 %. The dialog shows the result, e.g. "10.2 ct − 20 % =
+8.16 ct". If zones overlap, the last matching one applies. Existing tariffs keep
+their template.
+
+## 17. Debug
+
+Konfiguration → System → **Debug**, for corrections after wrong measurements
+or tests. Each action asks for confirmation:
+
+- **Peak des Monats zurücksetzen**: the quarter hours so far no longer count
+  for the peak, the limit starts again from the configured value. The
+  statistics keep the real peak, the grid operator bills that one.
+- **Einspeisung löschen**: sets the feed-in of the chosen days (up to
+  yesterday) to 0 kWh, the revenue follows. **Prüfen** shows energy and revenue
+  first; needs the admin password and cannot be undone, download a backup
+  first.
+- **Einspeisung neu berechnen**: recalculates the feed-in of the chosen days
+  (up to yesterday) per quarter hour from PV, battery, grid import and home
+  consumption, at most what PV and battery delivered, e.g. after a wrong export
+  sensor. Import, consumption, PV, battery and the EEG meter stay unchanged;
+  quarter hours without stored home consumption are left as they are.
+  **Prüfen** shows old and new feed-in and revenue; same protection as above.
+- **Ereignisliste leeren**: clears the events in Mehr → Peak Shaving.
+- **Abwurfsperren aufheben**: loads held off by the shed guard may start at
+  once.
+
+## Backup
+
+- Home Assistant only backs up the config folder of this addon (it holds
+  `evcc.db`) if **evcc custom** is selected in the automatic backup under the
+  apps.
+- Keep **Create backup** ticked before every update.
+- The backup runs while evcc is running. The database uses WAL mode (`evcc.db`
+  next to `evcc.db-wal`), so a copy taken during operation can in rare cases be
+  incomplete. To be safe, also download a backup in evcc (**Configuration →
+  System → Backup → Download backup**).
+- To restore: stop the addon, restore the backup, start the addon.
+
+## Login
+
+The fork's settings (limits, entities, circuits, profiles, log file) need the
+evcc login like evcc's own configuration. Switches, one-time charging and soc
+thresholds work without it. Home Assistant automations that change these
+settings through the API need evcc's API key.
+
+## Requirements
+
+The battery needs `modeNormal` and `modeCharge` scripts configured on the Home
+Assistant battery meter, otherwise evcc cannot control it at all and the grid
+charging features stay hidden.
+
+## Back to the official evcc
+
+1. Stop this addon.
+2. Start the official addon with **its own old database**. It stays unchanged
+   in the config folder of the official addon as long as you do not delete that
+   addon (state before the switch).
+3. Do not copy the database of this addon into the official one: the loadpoint
+   stores keys (for example `minCurrent1p`, `maxCurrent1p` and the delays) that
+   the official evcc does not know, so it may not start that loadpoint and
+   reports a configuration error. Clearing the fields here does not remove the
+   keys.
+4. Devices and settings made after the switch have to be entered again there.
+   Sessions and peak values stay in the database of this addon.
+5. Back up both databases before every switch.
+
+## Running alongside the official addon
+
+Both can be installed at the same time, but not started at the same time: they
+bind the same ports and would fight over the same devices. Keep `sqlite_file`
+and `config_file` pointing at separate paths so they do not share state.
+
+## Source
+
+Built from https://github.com/SolarPower2024/evcc, branch `load-peak-features`.
+See `core/lm/README.md` there for the implementation details and the list of
+upstream files that were touched.
