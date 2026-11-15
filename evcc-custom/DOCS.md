@@ -339,8 +339,8 @@ lists every load on a circuit, including battery grid charging as "Batterie
 its power, its state (charging, throttled, waiting, shed with the time it stays
 off, paused, off), a lock while the shed guard holds it off, and a mark when the
 optimizer decides. Below, **Letzte Eingriffe** shows the latest load management
-actions (shed, throttled, not following its limit, grid charging blocked); the
-peak events stay under **Zuletzt**. The events are kept in memory and start empty
+actions (shed, switched on again, throttled, not following its limit, grid
+charging blocked); the peak events stay under **Zuletzt**. The events are kept in memory and start empty
 after a restart.
 
 There is no switch to turn load management off any more: the circuits always
@@ -511,8 +511,10 @@ the log page, the button **Log-Datei** writes the log to daily files as well:
 
 The files are `/config/logs/evcc-YYYY-MM-DD.log`, older days packed as
 `.log.gz`, at most 1 GB together (the oldest go first; if today's file alone
-reaches 1 GB it pauses until the next day). Read them through the Samba share
-under `addon_configs\<id>_evcc_custom\logs`. Switching on also writes the lines
+reaches 1 GB it pauses until the next day). The dialog lists the files with
+date and size, newest first, and downloads each one (today as text, older days
+as `.log.gz`). They are also readable through the Samba share under
+`addon_configs\<id>_evcc_custom\logs`. Switching on also writes the lines
 from before, so the start of evcc is in the file after every restart.
 
 ## 14. Snow on PV (Schnee auf PV)
@@ -566,6 +568,22 @@ grid fee: either a new value or **minus percent** (0–100), e.g. April to
 September 10–16 h minus 20 %. The dialog shows the result, e.g. "10.2 ct − 20 % =
 8.16 ct". If zones overlap, the last matching one applies. Existing tariffs keep
 their template.
+
+## 17. Debug
+
+Konfiguration → System → **Debug**, for corrections after wrong measurements
+or tests. Each action asks for confirmation:
+
+- **Peak des Monats zurücksetzen**: the quarter hours so far no longer count
+  for the peak, the limit starts again from the configured value. The
+  statistics keep the real peak, the grid operator bills that one.
+- **Einspeisung löschen**: sets the feed-in of the chosen days (up to
+  yesterday) to 0 kWh, the revenue follows. **Prüfen** shows energy and revenue
+  first; needs the admin password and cannot be undone, download a backup
+  first.
+- **Ereignisliste leeren**: clears the events in Mehr → Peak Shaving.
+- **Abwurfsperren aufheben**: loads held off by the shed guard may start at
+  once.
 
 ## Backup
 

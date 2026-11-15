@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.319.0-lm3
+
+- **Debug:** new section under Konfiguration → System → **Debug** to correct
+  wrong measurements: reset the peak of the month (the limit starts again from
+  the configured value), set the feed-in of past days to 0 kWh (revenue follows,
+  with a preview, needs the admin password, cannot be undone - download a
+  backup first), clear the load management events and lift the shed guard
+  locks.
+- **Mehr → Peak Shaving:** **Letzte Eingriffe** also shows when a load shed by
+  load management is switched on again.
+- **Log file:** the Log-Datei dialog lists the files with date and size and
+  downloads each one (today as text, older days as .log.gz).
+- The warnings "current mismatch" for a heater in stages and "poll mode" when
+  all vehicles come from Home Assistant are gone.
+
 ## 0.319.0-lm2
 
 - **Starting loads:** load management keeps the current or power just granted to
