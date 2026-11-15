@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.319.0-lm4
+
+- **Debug:** new action **Einspeisung neu berechnen** under Konfiguration →
+  System → **Debug**: recalculates the feed-in of past days from production,
+  battery, grid import and consumption, for example after a wrong export
+  sensor. **Prüfen** shows old and new feed-in and revenue first; quarter hours
+  without stored home consumption stay unchanged. Needs the admin password and
+  cannot be undone, download a backup first.
+
 ## 0.319.0-lm3
 
 - **Debug:** new section under Konfiguration → System → **Debug** to correct

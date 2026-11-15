@@ -581,6 +581,12 @@ or tests. Each action asks for confirmation:
   yesterday) to 0 kWh, the revenue follows. **Prüfen** shows energy and revenue
   first; needs the admin password and cannot be undone, download a backup
   first.
+- **Einspeisung neu berechnen**: recalculates the feed-in of the chosen days
+  (up to yesterday) per quarter hour from PV, battery, grid import and home
+  consumption, at most what PV and battery delivered, e.g. after a wrong export
+  sensor. Import, consumption, PV, battery and the EEG meter stay unchanged;
+  quarter hours without stored home consumption are left as they are.
+  **Prüfen** shows old and new feed-in and revenue; same protection as above.
 - **Ereignisliste leeren**: clears the events in Mehr → Peak Shaving.
 - **Abwurfsperren aufheben**: loads held off by the shed guard may start at
   once.
