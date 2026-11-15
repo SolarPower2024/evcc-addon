@@ -4,6 +4,8 @@ Home-Assistant-Integration für Peak Shaving (Leistungstarif) mit einer
 Fronius-GEN24-Batterie (z. B. BYD Battery-Box) über
 [fronius_modbus](https://github.com/callifo/fronius_modbus).
 
+> Privates Projekt, Nutzung auf eigene Gefahr: keine Gewähr, keine Haftung, siehe [LICENSE](../../LICENSE) (MIT).
+
 Der evcc-Fork gibt die Peak-Werte vor (an/aus, erlaubte Netzleistung, SoC-Schwelle,
 Netzladeleistung). Die Anforderung (normal, Netzladen, Entladesperre) setzen die
 Home-Assistant-Skripte der evcc-Batteriemodi, wie im evcc-Standard. Diese Integration regelt die Batterie innerhalb

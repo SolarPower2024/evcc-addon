@@ -2,6 +2,8 @@
 
 A private addon repository for a customised evcc build.
 
+> Private project, use at your own risk: no warranty and no liability, see [LICENSE](LICENSE) (MIT).
+
 ## Install
 
 Home Assistant → Settings → Add-ons → Add-on Store → ⋮ → Repositories → add:
