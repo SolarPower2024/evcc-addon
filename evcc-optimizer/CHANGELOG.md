@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026.11.19
+
+Official optimizer image, build of 2026-11-19:
+
+- New optional inputs: a charge power limit per circuit and a safety margin against forecast errors. evcc does not send them yet, so plans stay as before.
+- Fixes for the last step before a battery is full and for spending the safety margin on flat tariffs.
+- Clearer explanation text when no goal falls within the plan (off unless configured; evcc custom does not use them).
+- Results on our test plans are identical to the previous build.
+- Nothing to do for you.
+
 ## 2026.11.9
 
 Official optimizer image, build of 2026-11-09:
