@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.319.1-lm1
+
+- **evcc 0.319.1:** fixes in the device templates for the Open-Meteo tariff
+  (empty values) and the Huawei SmartLogger. Nothing to do.
+
 ## 0.319.0-lm5
 
 - **Charging plans:** the planner now takes the peak limit, the circuit limits
