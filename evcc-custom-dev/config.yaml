@@ -1,6 +1,6 @@
 ---
 name: evcc custom development
-version: 0.319.1-lm1
+version: 0.319.1-master-dev1
 slug: evcc_custom_dev
 description: Test version of evcc custom for new functions, started instead of evcc custom (own database)
 url: https://github.com/SolarPower2024/evcc

@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.319.1-master-dev1
+
+- **Test version with the current evcc development state** (not yet released by
+  evcc) on top of 0.319.1-lm1. Main changes from evcc: redesigned energy page
+  (summary, daily calendar view), a single missing quarter hour is filled from
+  its neighbors, battery mode "hold" is now called "holddischarge" (same
+  number, scripts keep working), new optimizer options.
+- Test only: do **not** give data back to evcc custom with this version, the
+  database layout differs from the released version.
+
 ## 0.319.1-lm1
 
 - **evcc 0.319.1:** fixes in the device templates for the Open-Meteo tariff
