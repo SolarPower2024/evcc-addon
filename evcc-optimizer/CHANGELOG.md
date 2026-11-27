@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026.11.24
+
+Official optimizer image, build of 2026-11-24:
+
+- Fixes in the plain-language plan explanations: no charge level shown for a vehicle without a known soc, a clearer reason when the home battery covers the house while the car uses the grid limit, and no export floor for a vehicle's end value (off unless configured; evcc custom does not use them).
+- Results on our test plans are identical to the previous build.
+- Nothing to do for you.
+
 ## 2026.11.19
 
 Official optimizer image, build of 2026-11-19:
